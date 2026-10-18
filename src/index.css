@@ -1,0 +1,58 @@
+:root {
+    --bg: #f7f7fb;
+    --card: #ffffff;
+    --accent: #2b6cb0;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, Segoe UI, Roboto, Arial;
+    background: var(--bg);
+    color: #111
+}
+
+a {
+    color: var(--accent)
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto
+}
+
+.card {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06)
+}
+
+.row {
+    display: flex;
+    gap: 12px
+}
+
+.venue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px
+}
+
+.btn {
+    background: var(--accent);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer
+}
+
+.muted {
+    color: #555
+}
