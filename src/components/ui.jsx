@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import Icon from './Icons'
 
 export function Spinner({ label = 'Loading…', inline = false }) {
     return (
@@ -13,7 +14,7 @@ export function Spinner({ label = 'Loading…', inline = false }) {
 export function ErrorState({ error, onRetry, title = 'Something went wrong' }) {
     return (
         <div className="state-box" role="alert">
-            <div className="state-icon" aria-hidden>!</div>
+            <div className="state-icon" aria-hidden><Icon name="alert" size={26} /></div>
             <h3>{title}</h3>
             <p className="muted">{error?.message || 'Please try again.'}</p>
             {error?.requestId && <p className="muted small">Reference: {error.requestId}</p>}
@@ -25,7 +26,7 @@ export function ErrorState({ error, onRetry, title = 'Something went wrong' }) {
 export function EmptyState({ title, children, action }) {
     return (
         <div className="state-box">
-            <div className="state-icon soft" aria-hidden>∅</div>
+            <div className="state-icon soft" aria-hidden><Icon name="inbox" size={26} /></div>
             <h3>{title}</h3>
             {children && <p className="muted">{children}</p>}
             {action}

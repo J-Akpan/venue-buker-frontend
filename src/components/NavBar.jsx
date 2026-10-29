@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import { initials } from '../lib/format'
-import logo from '../assets/logo.svg'
+import Icon from './Icons'
 
 export default function NavBar() {
     const { user, isOwner, isAdmin, isSuperAdmin, logout } = useAuth()
@@ -39,7 +39,10 @@ export default function NavBar() {
         <header className="site-header">
             <div className="container header-inner">
                 <Link to="/" className="brand-link" aria-label="VenBuk home">
-                    <img src={logo} alt="VenBuk" className="site-logo" />
+                    <span className="brand" aria-hidden>
+                        <span className="brand-mark"><Icon name="building" size={19} /></span>
+                        <span className="brand-name">Ven<b>Buk</b></span>
+                    </span>
                 </Link>
 
                 <button

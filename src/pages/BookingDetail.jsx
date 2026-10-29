@@ -5,6 +5,7 @@ import { parseError } from '../api/client'
 import { useAuth } from '../auth/AuthProvider'
 import { useAsync, useTitle } from '../lib/hooks'
 import { dateTime, durationLabel, money } from '../lib/format'
+import Icon from '../components/Icons'
 import { BackLink, ConfirmDialog, ErrorState, Spinner, StatusBadge } from '../components/ui'
 import { HoldTimer, canCancel, effectiveStatus } from '../components/BookingParts'
 import { useToast } from '../components/Toast'
@@ -76,7 +77,7 @@ export default function BookingDetail() {
                     <h1>{b.venue?.name || 'Venue'}</h1>
                     <StatusBadge status={status} />
                 </div>
-                {b.venue?.location && <p className="muted">📍 {b.venue.location}</p>}
+                {b.venue?.location && <p className="venue-loc"><Icon name="pin" size={15} /> {b.venue.location}</p>}
 
                 {status === 'pending' && mine && (
                     <div className="alert alert-warn">

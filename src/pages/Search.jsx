@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigationType, useSearchParams } from 'react-router-dom'
 import { venuesApi } from '../api'
 import { useAsync, useDebounced, useTitle } from '../lib/hooks'
 import VenueCard, { VenueCardSkeleton } from '../components/VenueCard'
@@ -16,9 +16,19 @@ const FILTER_KEYS = ['q', 'location', 'minCapacity', 'maxPrice']
 export default function Search() {
     useTitle('Find venues')
     const [params, setParams] = useSearchParams()
+    const navigationType = useNavigationType()
+    const paramsKey = params.toString()
     // Text boxes keep local state and are pushed to the URL after a pause, so every search is shareable.
     const [draft, setDraft] = useState(() => Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) || ''])))
     const debounced = useDebounced(draft)
+
+    // Restore filter fields when Back/Forward changes the URL. Internal filter updates use PUSH or
+    // REPLACE, so they don't overwrite text the user is still editing.
+    useEffect(() => {
+        if (navigationType !== 'POP') return
+        const restored = new URLSearchParams(paramsKey)
+        setDraft(Object.fromEntries(FILTER_KEYS.map((k) => [k, restored.get(k) || ''])))
+    }, [navigationType, paramsKey])
 
     useEffect(() => {
         const next = new URLSearchParams(params)

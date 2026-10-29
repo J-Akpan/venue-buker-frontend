@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
   <defs>
     <linearGradient id="g" x1="0" x2="1">
-      <stop offset="0%" stop-color="#4B0082" stop-opacity="1" />
-      <stop offset="100%" stop-color="#4B0082" stop-opacity="0.65" />
+      <stop offset="0%" stop-color="#0F5F63" stop-opacity="1" />
+      <stop offset="100%" stop-color="#0F5F63" stop-opacity="0.65" />
     </linearGradient>
     <linearGradient id="g2" x1="0" x2="1">
-      <stop offset="0%" stop-color="#e9d5ff" stop-opacity="0.4" />
+      <stop offset="0%" stop-color="#c9ece9" stop-opacity="0.4" />
       <stop offset="100%" stop-color="#fff8e1" stop-opacity="0.2" />
     </linearGradient>
   </defs>
-  <rect width="100%" height="100%" fill="#efeefe"/>
+  <rect width="100%" height="100%" fill="#e8f4f3"/>
   <g transform="translate(0,0)">
-    <ellipse cx="400" cy="700" rx="700" ry="250" fill="#f3e8ff"/>
+    <ellipse cx="400" cy="700" rx="700" ry="250" fill="#dff0ee"/>
     <rect x="0" y="0" width="100%" height="100%" fill="url(#g)" opacity="0.65" />
     <g fill="url(#g2)" opacity="0.6">
       <circle cx="1200" cy="160" r="120" />

@@ -4,12 +4,26 @@ import { venuesApi } from '../api'
 import { useAsync, useTitle } from '../lib/hooks'
 import VenueCard, { VenueCardSkeleton } from '../components/VenueCard'
 import { ErrorState } from '../components/ui'
+import Icon from '../components/Icons'
 import hero from '../assets/hero.svg'
 
 const STEPS = [
-    ['1', 'Find', 'Filter by location, capacity and budget to shortlist the right space.'],
-    ['2', 'Reserve', 'Pick your date and time. We hold the slot for you while you pay.'],
-    ['3', 'Pay securely', 'Checkout with Stripe. Your booking is confirmed the moment payment clears.'],
+    ['search', 'Find', 'Filter by location, capacity and budget to shortlist the right space.'],
+    ['calendar', 'Reserve', 'Pick your date and time. We hold the slot for you while you pay.'],
+    ['shield', 'Pay securely', 'Checkout with Stripe. Your booking is confirmed the moment payment clears.'],
+]
+
+const OCCASIONS = [
+    ['heart', 'Weddings', 'wedding'],
+    ['briefcase', 'Conferences', 'conference'],
+    ['sparkle', 'Parties', 'party'],
+    ['mic', 'Launches', 'launch'],
+]
+
+const TRUST = [
+    ['card', 'Prices shown up front'],
+    ['clock', 'Your slot is held while you pay'],
+    ['shield', 'Secure checkout with Stripe'],
 ]
 
 export default function Landing() {
@@ -31,13 +45,28 @@ export default function Landing() {
         <>
             <section className="hero" style={{ '--hero-url': `url(${hero})` }}>
                 <div className="container hero-inner">
-                    <h1>Find the perfect venue for your event</h1>
+                    <span className="eyebrow">Event venues, booked in minutes</span>
+                    <h1>Find the perfect venue for <em>your event</em></h1>
                     <p>Weddings, conferences, launches and parties. Browse spaces, check the price up front, and book in minutes.</p>
                     <form className="hero-search" onSubmit={search} role="search">
-                        <input aria-label="What are you planning?" placeholder="Venue name or keyword" value={q} onChange={(e) => setQ(e.target.value)} maxLength={100} />
-                        <input aria-label="Location" placeholder="City or area" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={100} />
-                        <button className="btn btn-gold">Search venues</button>
+                        <label className="hero-field"><Icon name="search" size={18} /><input aria-label="What are you planning?" placeholder="Venue name or keyword" value={q} onChange={(e) => setQ(e.target.value)} maxLength={100} /></label>
+                        <label className="hero-field"><Icon name="pin" size={18} /><input aria-label="Location" placeholder="City or area" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={100} /></label>
+                        <button className="btn btn-gold btn-lg">Search venues</button>
                     </form>
+                    <div className="occasions">
+                        <span>Popular:</span>
+                        {OCCASIONS.map(([icon, label, term]) => (
+                            <Link key={term} to={`/search?q=${term}`} className="occasion"><Icon name={icon} size={15} /> {label}</Link>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <section className="trust-strip">
+                <div className="container trust-row">
+                    {TRUST.map(([icon, text]) => (
+                        <div className="trust-item" key={text}><Icon name={icon} size={20} /> <span>{text}</span></div>
+                    ))}
                 </div>
             </section>
 
@@ -63,9 +92,10 @@ export default function Landing() {
             <section className="container section">
                 <div className="section-head"><h2>How it works</h2></div>
                 <div className="steps">
-                    {STEPS.map(([n, t, d]) => (
-                        <div className="card step" key={n}>
-                            <span className="step-n">{n}</span>
+                    {STEPS.map(([icon, t, d], i) => (
+                        <div className="card step" key={t}>
+                            <span className="step-n"><Icon name={icon} size={22} /></span>
+                            <span className="step-num">0{i + 1}</span>
                             <h3>{t}</h3>
                             <p className="muted">{d}</p>
                         </div>

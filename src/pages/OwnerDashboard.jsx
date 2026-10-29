@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { bookingsApi, venuesApi } from '../api'
 import { parseError } from '../api/client'
 import { useAsync, useTitle } from '../lib/hooks'
 import { dateTime, money } from '../lib/format'
+import Icon from '../components/Icons'
 import { Alert, ConfirmDialog, EmptyState, ErrorState, Field, Modal, PageHeader, Pagination, Spinner, StatusBadge } from '../components/ui'
 import { VenueImage } from '../components/VenueCard'
 import { effectiveStatus } from '../components/BookingParts'
@@ -144,6 +145,17 @@ export default function OwnerDashboard() {
     const [viewing, setViewing] = useState(null)
     const [deleting, setDeleting] = useState(null)
     const [busy, setBusy] = useState(false)
+    const [params, setParams] = useSearchParams()
+
+    // "Edit this venue" on a venue page links here with ?edit=<venueId>.
+    const editId = params.get('edit')
+    useEffect(() => {
+        if (!editId || !data) return
+        const match = data.data.find((v) => v.venueId === editId)
+        if (match) setEditing(match)
+        else venuesApi.get(editId).then((r) => setEditing(r.venue)).catch(() => {}) // not on this page of the list
+        setParams((p) => { p.delete('edit'); return p }, { replace: true })
+    }, [editId, data]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const remove = async () => {
         setBusy(true)
@@ -181,7 +193,7 @@ export default function OwnerDashboard() {
                             <article className="card owner-card" key={v.venueId}>
                                 <div className="owner-card-img"><VenueImage venue={v} /></div>
                                 <h3>{v.name}</h3>
-                                <p className="muted small">📍 {v.location} · 👥 {v.capacity} · {money(v.pricePerHour, v.currency)}/hr</p>
+                                <p className="venue-loc small"><Icon name="pin" size={14} /> {v.location} <span aria-hidden>·</span> <Icon name="users" size={14} /> {v.capacity} <span aria-hidden>·</span> {money(v.pricePerHour, v.currency)}/hr</p>
                                 <div className="row-gap">
                                     <button className="btn btn-sm" onClick={() => setViewing(v)}>Bookings</button>
                                     <button className="btn btn-ghost btn-sm" onClick={() => setEditing(v)}>Edit</button>

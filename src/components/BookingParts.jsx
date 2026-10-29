@@ -1,3 +1,4 @@
+import Icon from './Icons'
 import React from 'react'
 import { useCountdown } from '../lib/hooks'
 
@@ -15,7 +16,7 @@ export function HoldTimer({ expiresAt, onExpire }) {
     if (secs === 0) return <span className="muted small">Hold expired</span>
     const mm = String(Math.floor(secs / 60)).padStart(2, '0')
     const ss = String(secs % 60).padStart(2, '0')
-    return <span className={`hold-timer ${secs < 120 ? 'urgent' : ''}`}>⏱ Pay within {mm}:{ss}</span>
+    return <span className={`hold-timer ${secs < 120 ? 'urgent' : ''}`}><Icon name="clock" size={14} /> Pay within {mm}:{ss}</span>
 }
 
 /** Pending bookings past their hold are effectively expired even before the server sweeps them. */

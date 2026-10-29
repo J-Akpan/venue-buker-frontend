@@ -4,6 +4,7 @@ import { bookingsApi, paymentsApi } from '../api'
 import { parseError } from '../api/client'
 import { useAsync, useTitle } from '../lib/hooks'
 import { dateTime, durationLabel, money } from '../lib/format'
+import Icon from '../components/Icons'
 import { ConfirmDialog, EmptyState, ErrorState, PageHeader, Pagination, Spinner, StatusBadge } from '../components/ui'
 import { HoldTimer, canCancel, effectiveStatus } from '../components/BookingParts'
 import { useToast } from '../components/Toast'
@@ -69,7 +70,7 @@ export default function Bookings() {
                                             <Link to={`/bookings/${b.bookingId}`} className="booking-title">{b.venue?.name || 'Venue'}</Link>
                                             <StatusBadge status={status} />
                                         </div>
-                                        {b.venue?.location && <div className="muted small">📍 {b.venue.location}</div>}
+                                        {b.venue?.location && <div className="venue-loc small"><Icon name="pin" size={14} /> {b.venue.location}</div>}
                                         <div>{dateTime(b.startsAt)} → {dateTime(b.endsAt)} <span className="muted">({durationLabel(b.startsAt, b.endsAt)})</span></div>
                                         {status === 'pending' && <HoldTimer expiresAt={b.expiresAt} onExpire={reload} />}
                                     </div>

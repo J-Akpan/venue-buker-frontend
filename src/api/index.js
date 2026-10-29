@@ -27,7 +27,7 @@ export const bookingsApi = {
     create: (body, idempotencyKey) =>
         data(http.post('/bookings', body, { headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {} })),
     mine: (params) => data(http.get('/bookings', { params })),
-    get: (id) => data(http.get(`/bookings/${id}`)),
+    get: (id, signal) => data(http.get(`/bookings/${id}`, { signal })),
     forVenue: (venueId, params) => data(http.get(`/bookings/venue/${venueId}`, { params })),
     cancel: (id) => data(http.post(`/bookings/${id}/cancel`)),
 }

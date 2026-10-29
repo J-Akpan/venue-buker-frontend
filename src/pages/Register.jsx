@@ -63,10 +63,10 @@ export default function Register() {
                 <Alert>{error}</Alert>
 
                 <fieldset className="role-pick">
-                    <legend>I want to</legend>
+                    <legend>Sign up as</legend>
                     {[
-                        ['User', 'Book venues'],
-                        ['Venue Owner', 'List my venue'],
+                        ['User', 'Customer'],
+                        ['Venue Owner', 'Venue Owner'],
                     ].map(([value, label]) => (
                         <label key={value} className={form.role === value ? 'on' : ''}>
                             <input type="radio" name="role" value={value} checked={form.role === value} onChange={set('role')} />
