@@ -10,8 +10,8 @@ import hero from '../assets/hero.svg'
 
 const STEPS = [
     ['search', 'Find', 'Filter by location, capacity and budget to shortlist the right space.'],
-    ['calendar', 'Reserve', 'Pick your date and time. We hold the slot for you while you pay.'],
-    ['shield', 'Pay securely', 'Checkout with Stripe. Your booking is confirmed when payment is verified.'],
+    ['calendar', 'Request', 'Choose your date and time. The venue owner reviews your request first.'],
+    ['shield', 'Confirm', 'Once accepted, pay securely through Stripe to confirm your booking.'],
 ]
 
 const OCCASIONS = [
@@ -23,7 +23,7 @@ const OCCASIONS = [
 
 const TRUST = [
     ['card', 'Prices shown up front'],
-    ['clock', 'Your slot is held while you pay'],
+    ['clock', 'Owner approval before payment'],
     ['shield', 'Secure checkout with Stripe'],
 ]
 

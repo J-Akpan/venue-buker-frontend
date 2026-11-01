@@ -24,7 +24,8 @@ export const tokens = {
     },
 }
 
-const baseURL = `${import.meta.env.VITE_API_URL || ''}/api/v1`
+const apiOrigin = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
+const baseURL = `${apiOrigin}/api/v1`
 
 export const http = axios.create({ baseURL, timeout: 20000 })
 
@@ -65,9 +66,15 @@ http.interceptors.response.use(
                 const access = await refreshTokens()
                 original.headers.Authorization = `Bearer ${access}`
                 return http(original)
-            } catch {
-                tokens.clear()
-                onSessionExpired()
+            } catch (refreshError) {
+                const refreshStatus = refreshError?.response?.status
+                if ([400, 401, 403].includes(refreshStatus)) {
+                    tokens.clear()
+                    onSessionExpired()
+                    return Promise.reject(error)
+                }
+                // Keep the stored session when refresh failed because the server or network is unavailable.
+                return Promise.reject(refreshError)
             }
         }
         return Promise.reject(error)

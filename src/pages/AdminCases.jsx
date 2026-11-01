@@ -13,7 +13,7 @@ export default function AdminCases() {
     const type = params.get('type') || ''
     const unassigned = params.get('unassigned') === '1'
     const { data, error, loading, reload } = useAsync(
-        () => adminCasesApi.list({ page, limit: 20, ...(status && { status }), ...(type && { type }), ...(unassigned && { unassigned: true }) }),
+        (signal) => adminCasesApi.list({ page, limit: 20, ...(status && { status }), ...(type && { type }), ...(unassigned && { unassigned: true }) }, signal),
         [page, status, type, unassigned],
     )
 

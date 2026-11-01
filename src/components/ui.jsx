@@ -73,21 +73,25 @@ export function Field({ label, error, hint, children }) {
 }
 
 const STATUS_STYLE = {
+    requested: 'info',
     pending: 'warn',
     confirmed: 'ok',
+    declined: 'bad',
     cancelled: 'neutral',
     expired: 'neutral',
     Pending: 'warn',
     Completed: 'ok',
     Failed: 'bad',
     Refunded: 'info',
+    PartiallyRefunded: 'info',
     open: 'warn',
     in_review: 'info',
     resolved: 'ok',
     rejected: 'bad',
 }
+const STATUS_LABEL = { requested: 'Awaiting owner', declined: 'Declined', PartiallyRefunded: 'Partially refunded' }
 export function StatusBadge({ status }) {
-    return <span className={`badge badge-${STATUS_STYLE[status] || 'neutral'}`}>{String(status).replace('_', ' ')}</span>
+    return <span className={`badge badge-${STATUS_STYLE[status] || 'neutral'}`}>{STATUS_LABEL[status] || String(status).replace('_', ' ')}</span>
 }
 
 export function Pagination({ meta, onPage }) {

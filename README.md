@@ -31,12 +31,18 @@ origin as the API (e.g. the backend's nginx) and leave `VITE_API_URL` empty.
 - **Browsing**: venue search with keyword, location, capacity, budget, event type, amenities, verification,
   server sorting and pagination, all kept in the URL.
 - **Booking**: future start times, 30-minute durations and a 14-day maximum, with live availability checks and
-  server quotes for cleaning fees, venue deposits, event type, attendee limits and cancellation terms.
-  `Idempotency-Key` on create protects retries and double-clicks before Stripe Checkout.
-- **My bookings**: hold countdown, pay now, cancel (with refund notice), payment history, status polling after payment.
+  server quotes for cleaning fees, venue deposits, event type, attendee limits and tiered cancellation refunds.
+  Optional venue extras are estimated from the current venue catalog and sent in the booking request for the API's
+  authoritative calculation. Booking requests wait for venue owner approval; accepted requests open a short payment
+  hold before Stripe Checkout. `Idempotency-Key` on create protects retries and double-clicks.
+- **My bookings**: owner response and payment hold countdowns, pay after acceptance, cancel with the saved refund
+  terms, payment history and status polling after checkout.
 - **Reviews**: paginated venue ratings and reviews from guests with completed bookings.
-- **Owners**: create / edit / delete venues with amenities, event types, fees and policies; confirm availability
-  and view bookings per venue. **Admins**: user directory, venue verification, support cases and staff management.
+- **Owners**: create / edit / delete venues with amenities, event types, bookable extras, fees and cancellation refund
+  tiers; upload venue photos, confirm availability, publish a private calendar feed, accept or decline requests, view
+  booking analytics and connect Stripe payouts. **Admins**: user directory, venue verification, support cases and staff
+  management.
+- **Account preferences**: profile and security settings, including opt-in WhatsApp booking updates.
 - Loading skeletons, empty and error states, field-level validation errors from the API, toasts, accessible
   modals, keyboard/skip-link support, responsive layout, code-split routes.
 

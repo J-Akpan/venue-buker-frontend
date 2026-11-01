@@ -69,7 +69,7 @@ export default function AdminStaff() {
     const toast = useToast()
     const { user } = useAuth()
     const [page, setPage] = useState(1)
-    const { data, error, loading, reload } = useAsync(() => adminStaffApi.list({ page, limit: 25 }), [page])
+    const { data, error, loading, reload } = useAsync((signal) => adminStaffApi.list({ page, limit: 25 }, signal), [page])
     const [creating, setCreating] = useState(false)
     const [removing, setRemoving] = useState(null)
     const [busy, setBusy] = useState(false)

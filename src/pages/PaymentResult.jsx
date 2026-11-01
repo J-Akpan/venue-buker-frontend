@@ -57,7 +57,7 @@ export default function PaymentResult({ kind }) {
             <div className="container section state-box narrow">
                 <div className="state-icon soft" aria-hidden><Icon name="undo" size={26} /></div>
                 <h1>Payment cancelled</h1>
-                <p className="muted">No money was taken. Your slot stays held for a short time, so you can finish paying before it's released.</p>
+                <p className="muted">No money was taken. The venue’s accepted booking stays held briefly, so you can return and finish payment before the slot is released.</p>
                 <div className="row-gap center-row">
                     <Link to={detail} className="btn">Back to my booking</Link>
                     <Link to="/search" className="btn btn-ghost">Browse venues</Link>

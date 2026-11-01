@@ -78,7 +78,7 @@ export default function CaseDetail({ staff = false }) {
     const toast = useToast()
     useTitle('Case')
     const { data, error, loading, reload } = useAsync(
-        () => (staff ? adminCasesApi.get(caseId) : supportApi.get(caseId)),
+        (signal) => (staff ? adminCasesApi.get(caseId, signal) : supportApi.get(caseId, signal)),
         [caseId, staff],
     )
     const [resolving, setResolving] = useState(false)

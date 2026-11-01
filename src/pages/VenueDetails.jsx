@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { bookingsApi, paymentsApi, reviewsApi, venuesApi } from '../api'
+import { bookingsApi, reviewsApi, venuesApi } from '../api'
 import { parseError } from '../api/client'
 import { useAuth } from '../auth/AuthProvider'
 import { useAsync, useTitle } from '../lib/hooks'
@@ -9,9 +9,11 @@ import { Alert, BackLink, ErrorState, Field, Pagination, Spinner } from '../comp
 import { useToast } from '../components/Toast'
 import Icon from '../components/Icons'
 import { VenuePlaceholder } from '../components/VenueCard'
+import CancellationSchedule from '../components/CancellationSchedule'
 
 const MIN_SLOT = 30
 const MAX_DAYS = 14
+const addOnUnitLabel = { flat: 'per item', per_person: 'per guest', per_hour: 'per hour' }
 export const PENDING_BOOKING_KEY = 'vb.pendingBooking'
 
 const minimumStartDate = () => {
@@ -71,7 +73,7 @@ function Gallery({ venue }) {
                 <div className="gallery-thumbs">
                     {pics.map((_, n) => (
                         <button key={n} className={n === i ? 'on' : ''} onClick={() => setI(n)} aria-label={`Show photo ${n + 1}`} aria-pressed={n === i}>
-                            {ok(n) ? <img src={pics[n]} alt="" onError={() => setBroken((b) => ({ ...b, [n]: true }))} /> : <VenuePlaceholder venue={venue} />}
+                            {ok(n) ? <img src={pics[n]} alt="" loading="lazy" decoding="async" onError={() => setBroken((b) => ({ ...b, [n]: true }))} /> : <VenuePlaceholder venue={venue} />}
                         </button>
                     ))}
                 </div>
@@ -82,13 +84,14 @@ function Gallery({ venue }) {
 
 function BookingPanel({ venue }) {
     const { user } = useAuth()
+    const toast = useToast()
     const nav = useNavigate()
     const location = useLocation()
-    const toast = useToast()
     const [start, setStart] = useState('')
     const [end, setEnd] = useState('')
     const [eventType, setEventType] = useState('')
     const [attendeeCount, setAttendeeCount] = useState('')
+    const [addOnQuantities, setAddOnQuantities] = useState({})
     const [busy, setBusy] = useState(false)
     const [error, setError] = useState('')
     const [quote, setQuote] = useState(null)
@@ -104,13 +107,40 @@ function BookingPanel({ venue }) {
 
     const minStart = toLocalInput(minimumStartDate())
     const check = validateBooking(start, end)
-    const params = start && end && !check.problem
+    const selectedAddOns = (venue.addOns || []).flatMap((addOn) => {
+        const quantity = Number(addOnQuantities[addOn.addOnId] || 0)
+        return Number.isInteger(quantity) && quantity > 0 && quantity <= 1000 ? [{ addOnId: addOn.addOnId, quantity }] : []
+    })
+    const addOnQuantityProblem = Object.values(addOnQuantities).some((value) => value !== '' && (!Number.isInteger(Number(value)) || Number(value) < 1 || Number(value) > 1000))
+    const addOnSelectionProblem = selectedAddOns.length > 10
+    const needsAttendeeCount = selectedAddOns.some(({ addOnId }) => venue.addOns.find((addOn) => addOn.addOnId === addOnId)?.chargeUnit === 'per_person')
+    const attendeeCountNumber = Number(attendeeCount)
+    const attendeeCountProblem = attendeeCount && (!Number.isInteger(attendeeCountNumber) || attendeeCountNumber < 1 || attendeeCountNumber > venue.capacity)
+        ? `Enter a whole number from 1 to ${Number(venue.capacity).toLocaleString()}`
+        : needsAttendeeCount && !attendeeCount ? 'Required for per-guest extras' : ''
+    const selectedAddOnLines = selectedAddOns.map(({ addOnId, quantity }) => {
+        const addOn = venue.addOns.find((item) => item.addOnId === addOnId)
+        const durationHours = (new Date(end).getTime() - new Date(start).getTime()) / 3_600_000
+        const multiplier = addOn.chargeUnit === 'per_hour' ? durationHours * quantity
+            : addOn.chargeUnit === 'per_person' ? attendeeCountNumber * quantity
+                : quantity
+        return {
+            addOnId,
+            name: addOn.name,
+            chargeUnit: addOn.chargeUnit,
+            unitPrice: Number(addOn.price),
+            quantity,
+            lineTotal: Math.round(Number(addOn.price) * multiplier * 100) / 100,
+        }
+    })
+    const params = start && end && !check.problem && !attendeeCountProblem && !addOnQuantityProblem && !addOnSelectionProblem
         ? {
             venueId: venue.venueId,
             startsAt: new Date(start).toISOString(),
             endsAt: new Date(end).toISOString(),
             ...(eventType && { eventType }),
             ...(attendeeCount && { attendeeCount: Number(attendeeCount) }),
+            ...(selectedAddOns.length && { addOns: selectedAddOns }),
         }
         : null
     const quoteKey = params ? JSON.stringify(params) : ''
@@ -131,9 +161,18 @@ function BookingPanel({ venue }) {
         setQuoteFor('')
         setQuoteError('')
         setQuoteLoading(true)
-        bookingsApi.quote(params, controller.signal)
+        const { addOns: _selectedAddOns, ...quoteParams } = params
+        bookingsApi.quote(quoteParams, controller.signal)
             .then((result) => {
-                setQuote(result.quote)
+                const extrasTotal = selectedAddOnLines.reduce((sum, line) => sum + line.lineTotal, 0)
+                setQuote({
+                    ...result.quote,
+                    priceBreakdown: {
+                        ...result.quote.priceBreakdown,
+                        amountDueNow: Math.round((Number(result.quote.priceBreakdown.amountDueNow) + extrasTotal) * 100) / 100,
+                        addOns: selectedAddOnLines,
+                    },
+                })
                 setQuoteFor(quoteKey)
             })
             .catch((err) => {
@@ -187,8 +226,10 @@ function BookingPanel({ venue }) {
         if (!start || !end) return setError('Choose a start and end time')
         const currentCheck = validateBooking(start, end)
         if (currentCheck.problem) return setError(currentCheck.problem)
-        if (overlapsBusySlot) return setError('That time overlaps a confirmed booking or active payment hold.')
-        if (!quoteReady) return setError(quoteError || 'Wait for the current price quote before reserving.')
+        if (attendeeCountProblem) return setError(attendeeCountProblem)
+        if (addOnQuantityProblem) return setError('Extra quantities must be whole numbers from 1 to 1,000.')
+        if (overlapsBusySlot) return setError('That time overlaps a confirmed booking, pending owner request or payment hold.')
+        if (!quoteReady) return setError(quoteError || 'Wait for the current price quote before requesting this booking.')
         setError('')
         setBusy(true)
         const body = {
@@ -197,8 +238,9 @@ function BookingPanel({ venue }) {
             endsAt: new Date(end).toISOString(),
             ...(eventType && { eventType }),
             ...(attendeeCount && { attendeeCount: Number(attendeeCount) }),
+            ...(selectedAddOns.length && { addOns: selectedAddOns }),
         }
-        const sig = `${body.venueId}|${body.startsAt}|${body.endsAt}|${body.eventType || ''}|${body.attendeeCount || ''}`
+        const sig = `${body.venueId}|${body.startsAt}|${body.endsAt}|${body.eventType || ''}|${body.attendeeCount || ''}|${JSON.stringify(body.addOns || [])}`
         if (keyRef.current.sig !== sig) keyRef.current = { sig, key: newKey() }
         let booking
         try {
@@ -209,15 +251,8 @@ function BookingPanel({ venue }) {
             setBusy(false)
             return
         }
-        try {
-            const { url } = await paymentsApi.checkout(booking.bookingId)
-            try { sessionStorage.setItem(PENDING_BOOKING_KEY, booking.bookingId) } catch { /* private mode */ }
-            window.location.assign(url) // hand off to Stripe Checkout
-        } catch (err) {
-            // The slot is held (unpaid) so the user can retry payment from the booking page.
-            toast.error(`Slot reserved, but we couldn't start payment: ${parseError(err).message}`)
-            nav(`/bookings/${booking.bookingId}`)
-        }
+        toast.success('Booking request sent to the venue.')
+        nav(`/bookings/${booking.bookingId}`)
     }
 
     return (
@@ -236,9 +271,36 @@ function BookingPanel({ venue }) {
             ) : (
                 <Field label="Event type (optional)"><input value={eventType} onChange={(e) => setEventType(e.target.value)} maxLength={80} /></Field>
             )}
-            <Field label="Attendees (optional)" hint={`Venue capacity: ${Number(venue.capacity).toLocaleString()}`}>
+            <Field label={`Attendees${needsAttendeeCount ? '' : ' (optional)'}`} error={attendeeCountProblem} hint={`Venue capacity: ${Number(venue.capacity).toLocaleString()}`}>
                 <input type="number" min="1" max={venue.capacity} step="1" value={attendeeCount} onChange={(e) => setAttendeeCount(e.target.value)} />
             </Field>
+            {venue.addOns?.length > 0 && (
+                <fieldset className="addon-options">
+                    <legend>Optional extras</legend>
+                    {venue.addOns.map((addOn) => {
+                        const quantity = Number(addOnQuantities[addOn.addOnId] || 0)
+                        const selected = quantity > 0
+                        return (
+                            <div className={`addon-option ${selected ? 'selected' : ''}`} key={addOn.addOnId}>
+                                <label>
+                                    <input type="checkbox" checked={selected} onChange={(e) => setAddOnQuantities((current) => {
+                                        if (e.target.checked) return { ...current, [addOn.addOnId]: '1' }
+                                        const next = { ...current }
+                                        delete next[addOn.addOnId]
+                                        return next
+                                    })} />
+                                    <span><strong>{addOn.name}</strong><small>{money(addOn.price, venue.currency)} {addOnUnitLabel[addOn.chargeUnit]}</small>
+                                        {addOn.description && <small>{addOn.description}</small>}
+                                    </span>
+                                </label>
+                                {selected && <Field label="Quantity"><input type="number" min="1" max="1000" step="1" value={addOnQuantities[addOn.addOnId]} onChange={(e) => setAddOnQuantities((current) => ({ ...current, [addOn.addOnId]: e.target.value }))} /></Field>}
+                            </div>
+                        )
+                    })}
+                    {addOnQuantityProblem && <small className="field-error">Extra quantities must be whole numbers from 1 to 1,000.</small>}
+                    {addOnSelectionProblem && <small className="field-error">Choose up to 10 extras for one booking.</small>}
+                </fieldset>
+            )}
             <Field label="Starts" error={check.startProblem}>
                 <input type="datetime-local" step={60} min={minStart} value={start} onChange={(e) => onStart(e.target.value)} required />
             </Field>
@@ -248,13 +310,14 @@ function BookingPanel({ venue }) {
 
             {availabilityLoading && <p className="muted small">Checking availability…</p>}
             {availabilityError && <p className="muted small">Availability could not be checked. The server will recheck the slot when you reserve.</p>}
-            {overlapsBusySlot && <Alert type="warn">This time overlaps a confirmed booking or active payment hold.</Alert>}
+            {overlapsBusySlot && <Alert type="warn">This time overlaps a confirmed booking, pending owner request or payment hold.</Alert>}
             {quoteLoading && <p className="muted small">Updating price…</p>}
 
             {quoteReady && (
                 <dl className="summary">
                     <div><dt>Venue rental</dt><dd>{money(quote.priceBreakdown.venueRental, quote.priceBreakdown.currency)}</dd></div>
                     <div><dt>Cleaning fee</dt><dd>{money(quote.priceBreakdown.cleaningFee, quote.priceBreakdown.currency)}</dd></div>
+                    {(quote.priceBreakdown.addOns || []).map((line) => <div key={line.addOnId}><dt>Extra · {line.name}</dt><dd>{money(line.lineTotal, quote.priceBreakdown.currency)}</dd></div>)}
                     <div className="total"><dt>Due now</dt><dd>{money(quote.priceBreakdown.amountDueNow, quote.priceBreakdown.currency)}</dd></div>
                     {Number(quote.priceBreakdown.refundableDepositDueToVenue) > 0 && (
                         <div><dt>Refundable deposit (due separately to venue)</dt><dd>{money(quote.priceBreakdown.refundableDepositDueToVenue, quote.priceBreakdown.currency)}</dd></div>
@@ -262,13 +325,14 @@ function BookingPanel({ venue }) {
                 </dl>
             )}
             {quoteReady && quote.cancellationPolicy && <p className="muted small"><strong>Cancellation policy:</strong> {quote.cancellationPolicy}</p>}
+            {quoteReady && <CancellationSchedule rules={quote.cancellationRules} />}
             {Number(venue.overtimePricePerHour) > 0 && <p className="muted small">Overtime: {money(venue.overtimePricePerHour, venue.currency)} per hour.</p>}
 
             <button className="btn btn-block btn-lg" disabled={busy || quoteLoading || !quoteReady || overlapsBusySlot}>
-                {busy ? 'Reserving…' : user ? 'Reserve & pay' : 'Sign in to book'}
+                {busy ? 'Sending request…' : user ? 'Request to book' : 'Sign in to book'}
             </button>
             <p className="muted small center">
-                We hold your slot for a short time while you pay. You won't be charged until you complete checkout.
+                The venue owner reviews your request first. If accepted, you can pay securely online to confirm the booking.
             </p>
         </form>
     )
@@ -407,7 +471,11 @@ export default function VenueDetails() {
                     {venue.amenities?.length > 0 && <p><strong>Amenities:</strong> {venue.amenities.join(', ')}</p>}
                     <h2>About this venue</h2>
                     <p className="prose">{venue.description}</p>
-                    {venue.cancellationPolicy && <><h2>Cancellation policy</h2><p className="prose">{venue.cancellationPolicy}</p></>}
+                    {(venue.cancellationPolicy || venue.cancellationRules?.length > 0) && <>
+                        <h2>Cancellation policy</h2>
+                        {venue.cancellationPolicy && <p className="prose">{venue.cancellationPolicy}</p>}
+                        <CancellationSchedule rules={venue.cancellationRules} />
+                    </>}
                     <h2>Contact</h2>
                     <p>{venue.contact}</p>
                     <ReviewSection venueId={venue.venueId} />
