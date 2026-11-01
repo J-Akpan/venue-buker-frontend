@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
+import logoLight from '../assets/logo-light.svg'
 import Icon from './Icons'
 
 function FooterLink({ to, children }) {
@@ -17,10 +18,9 @@ export default function Footer() {
             <div className="container footer-main">
                 <div className="footer-brand-block">
                     <Link to="/" className="footer-brand" aria-label="VenBuk home">
-                        <span className="footer-brand-mark"><Icon name="building" size={21} /></span>
-                        <span>Ven<b>Buk</b></span>
+                        <img className="footer-logo" src={logoLight} alt="" aria-hidden="true" />
                     </Link>
-                    <p>Find a space that fits your event. Compare venue details, see the price before you book, and reserve online.</p>
+                    <p>Find a space that fits your event, send a booking request, and pay securely online after the venue accepts.</p>
                     <div className="footer-security">
                         <span className="footer-security-icon"><Icon name="shield" size={17} /></span>
                         <span><strong>Secure checkout</strong><small>Payments are handled by Stripe.</small></span>

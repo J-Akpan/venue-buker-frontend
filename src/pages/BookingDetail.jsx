@@ -9,6 +9,7 @@ import Icon from '../components/Icons'
 import { BackLink, ConfirmDialog, ErrorState, Spinner, StatusBadge } from '../components/ui'
 import { HoldTimer, canCancel, effectiveStatus } from '../components/BookingParts'
 import { useToast } from '../components/Toast'
+import CancellationSchedule, { estimateCancellationRefundPercent } from '../components/CancellationSchedule'
 import { PENDING_BOOKING_KEY } from './VenueDetails'
 
 export default function BookingDetail() {
@@ -17,10 +18,10 @@ export default function BookingDetail() {
     const toast = useToast()
     useTitle('Booking details')
     const { data, error, loading, reload } = useAsync(
-        async () => {
-            const { booking } = await bookingsApi.get(bookingId)
+        async (signal) => {
+            const { booking } = await bookingsApi.get(bookingId, signal)
             // Payment history is only visible to the booker, so skip the call for owners/admins viewing it.
-            const payments = booking.userId === user.userId ? (await paymentsApi.forBooking(bookingId)).data : []
+            const payments = booking.userId === user.userId ? (await paymentsApi.forBooking(bookingId, signal)).data : []
             return { booking, payments }
         },
         [bookingId],
@@ -58,8 +59,12 @@ export default function BookingDetail() {
     const cancel = async () => {
         setBusy(true)
         try {
-            await bookingsApi.cancel(b.bookingId)
-            toast.success(b.status === 'confirmed' ? 'Booking cancelled. Your refund is on its way.' : 'Booking cancelled.')
+            const { booking } = await bookingsApi.cancel(b.bookingId)
+            if (b.status === 'confirmed') {
+                toast.success(booking.cancellationRefundPercent > 0
+                    ? `Booking cancelled. A ${booking.cancellationRefundPercent}% refund is being processed.`
+                    : 'Booking cancelled. No refund is due under the saved cancellation terms.')
+            } else toast.success('Booking cancelled.')
             setConfirm(false)
             reload()
         } catch (err) {
@@ -81,11 +86,18 @@ export default function BookingDetail() {
 
                 {status === 'pending' && mine && (
                     <div className="alert alert-warn">
-                        <div><strong>Payment required.</strong> Your slot is held but not yet confirmed.</div>
+                        <div><strong>Payment required.</strong> The venue accepted your request. Pay before the hold expires to confirm the booking.</div>
                         <HoldTimer expiresAt={b.expiresAt} onExpire={reload} />
                     </div>
                 )}
-                {status === 'expired' && <div className="alert alert-info">The payment window lapsed and the slot was released. You can book it again if it's still free.</div>}
+                {status === 'requested' && mine && (
+                    <div className="alert alert-info">
+                        <div><strong>Waiting for the venue owner.</strong> Your request is holding the selected time while the venue reviews it.</div>
+                        <HoldTimer expiresAt={b.expiresAt} label="Owner response due in" onExpire={reload} />
+                    </div>
+                )}
+                {status === 'declined' && <div className="alert alert-info">The venue owner declined this request. You can choose another time or venue.</div>}
+                {status === 'expired' && <div className="alert alert-info">{b.status === 'requested' ? 'The venue response window expired' : 'The payment window expired'} and the slot was released. You can book it again if it's still free.</div>}
 
                 <dl className="summary">
                     <div><dt>Starts</dt><dd>{dateTime(b.startsAt)}</dd></div>
@@ -96,6 +108,7 @@ export default function BookingDetail() {
                     {b.priceBreakdown && <>
                         <div><dt>Venue rental</dt><dd>{money(b.priceBreakdown.venueRental, b.currency)}</dd></div>
                         <div><dt>Cleaning fee</dt><dd>{money(b.priceBreakdown.cleaningFee, b.currency)}</dd></div>
+                        {(b.priceBreakdown.addOns || []).map((line) => <div key={line.addOnId}><dt>Extra · {line.name}</dt><dd>{money(line.lineTotal, b.currency)}</dd></div>)}
                     </>}
                     <div className="total"><dt>Due now</dt><dd>{money(b.priceBreakdown?.amountDueNow ?? b.totalPrice, b.currency)}</dd></div>
                     {Number(b.priceBreakdown?.refundableDepositDueToVenue) > 0 && <div><dt>Refundable deposit (due separately to venue)</dt><dd>{money(b.priceBreakdown.refundableDepositDueToVenue, b.currency)}</dd></div>}
@@ -104,6 +117,10 @@ export default function BookingDetail() {
                     {b.cancelledAt && <div><dt>Cancelled on</dt><dd>{dateTime(b.cancelledAt)}</dd></div>}
                 </dl>
                 {b.cancellationPolicySnapshot && <p className="muted small"><strong>Cancellation policy:</strong> {b.cancellationPolicySnapshot}</p>}
+                <CancellationSchedule rules={b.cancellationRulesSnapshot} title="Refund terms saved with this booking" />
+                {b.status === 'cancelled' && b.cancellationRefundPercent !== undefined && (
+                    <p className="muted small"><strong>Refund under saved terms:</strong> {b.cancellationRefundPercent}%</p>
+                )}
 
                 <div className="row-gap">
                     {status === 'pending' && mine && <button className="btn" disabled={busy} onClick={pay}>{busy ? 'Opening…' : 'Pay now'}</button>}
@@ -120,12 +137,13 @@ export default function BookingDetail() {
                         <p className="muted">No payment attempts yet.</p>
                     ) : (
                         <table className="table">
-                            <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+                            <thead><tr><th>Date</th><th>Amount</th><th>Refunded</th><th>Status</th></tr></thead>
                             <tbody>
                                 {payments.map((p) => (
                                     <tr key={p.paymentId}>
                                         <td>{dateTime(p.refundedAt || p.paidAt || b.createdAt)}</td>
                                         <td>{money(p.amount, p.currency)}</td>
+                                        <td>{money(p.refundedAmount || 0, p.currency)}</td>
                                         <td><StatusBadge status={p.status} /></td>
                                     </tr>
                                 ))}
@@ -141,7 +159,9 @@ export default function BookingDetail() {
                 busy={busy}
                 title="Cancel this booking?"
                 confirmLabel="Yes, cancel booking"
-                message={b.status === 'confirmed' ? `Cancelling releases the slot and refunds ${money(b.totalPrice, b.currency)} to your card.` : 'This releases the slot.'}
+                message={b.status === 'confirmed'
+                    ? `Based on the saved cancellation terms, this booking is currently eligible for an estimated ${estimateCancellationRefundPercent(b.cancellationRulesSnapshot, b.startsAt)}% refund.`
+                    : 'This releases the slot. A payment is only taken after the venue accepts your request.'}
                 onConfirm={cancel}
                 onClose={() => setConfirm(false)}
             />

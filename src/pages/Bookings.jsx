@@ -8,6 +8,7 @@ import Icon from '../components/Icons'
 import { ConfirmDialog, EmptyState, ErrorState, PageHeader, Pagination, Spinner, StatusBadge } from '../components/ui'
 import { HoldTimer, canCancel, effectiveStatus } from '../components/BookingParts'
 import { useToast } from '../components/Toast'
+import { estimateCancellationRefundPercent } from '../components/CancellationSchedule'
 import { PENDING_BOOKING_KEY } from './VenueDetails'
 
 export default function Bookings() {
@@ -15,7 +16,7 @@ export default function Bookings() {
     const toast = useToast()
     const [params, setParams] = useSearchParams()
     const page = Number(params.get('page')) || 1
-    const { data, error, loading, reload } = useAsync(() => bookingsApi.mine({ page, limit: 10 }), [page])
+    const { data, error, loading, reload } = useAsync((signal) => bookingsApi.mine({ page, limit: 10 }, signal), [page])
     const [cancelling, setCancelling] = useState(null)
     const [busyId, setBusyId] = useState(null)
 
@@ -35,8 +36,12 @@ export default function Bookings() {
     const confirmCancel = async () => {
         setBusyId(cancelling.bookingId)
         try {
-            await bookingsApi.cancel(cancelling.bookingId)
-            toast.success(cancelling.status === 'confirmed' ? 'Booking cancelled. Your refund is on its way.' : 'Booking cancelled.')
+            const { booking } = await bookingsApi.cancel(cancelling.bookingId)
+            if (cancelling.status === 'confirmed') {
+                toast.success(booking.cancellationRefundPercent > 0
+                    ? `Booking cancelled. A ${booking.cancellationRefundPercent}% refund is being processed.`
+                    : 'Booking cancelled. No refund is due under the saved cancellation terms.')
+            } else toast.success('Booking cancelled.')
             setCancelling(null)
             reload()
         } catch (err) {
@@ -48,7 +53,7 @@ export default function Bookings() {
 
     return (
         <div className="container section">
-            <PageHeader title="My bookings" subtitle="Track reservations, finish payments and manage cancellations." actions={<Link to="/search" className="btn">Book a venue</Link>} />
+            <PageHeader title="My bookings" subtitle="Track venue responses, finish payments after approval and manage cancellations." actions={<Link to="/search" className="btn">Book a venue</Link>} />
 
             {error ? (
                 <ErrorState error={error} onRetry={reload} />
@@ -72,7 +77,9 @@ export default function Bookings() {
                                         </div>
                                         {b.venue?.location && <div className="venue-loc small"><Icon name="pin" size={14} /> {b.venue.location}</div>}
                                         <div>{dateTime(b.startsAt)} → {dateTime(b.endsAt)} <span className="muted">({durationLabel(b.startsAt, b.endsAt)})</span></div>
+                                        {status === 'requested' && <><span className="muted small">Waiting for the venue owner to respond.</span><HoldTimer expiresAt={b.expiresAt} label="Owner response due in" onExpire={reload} /></>}
                                         {status === 'pending' && <HoldTimer expiresAt={b.expiresAt} onExpire={reload} />}
+                                        {status === 'declined' && <span className="muted small">The venue owner declined this request.</span>}
                                     </div>
                                     <div className="booking-side">
                                         <strong>{money(b.totalPrice, b.currency)}</strong>
@@ -105,7 +112,7 @@ export default function Bookings() {
                 confirmLabel="Yes, cancel booking"
                 message={
                     cancelling?.status === 'confirmed'
-                        ? `You've paid for ${cancelling?.venue?.name || 'this venue'}. Cancelling releases the slot and refunds ${money(cancelling?.totalPrice, cancelling?.currency)} to your card.`
+                        ? `You've paid for ${cancelling?.venue?.name || 'this venue'}. Based on the saved cancellation terms, this booking is currently eligible for an estimated ${estimateCancellationRefundPercent(cancelling?.cancellationRulesSnapshot, cancelling?.startsAt)}% refund.`
                         : 'This releases the slot you were holding.'
                 }
                 onConfirm={confirmCancel}

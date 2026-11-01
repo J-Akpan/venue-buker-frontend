@@ -7,8 +7,8 @@ import Icon from '../components/Icons'
 const FLOW = [
     ['search', 'Find your space', 'Filter venues by location, capacity, budget, event type and amenities.'],
     ['calendar', 'Check the details', 'See current availability, get an itemized price quote and read the venue terms.'],
-    ['card', 'Reserve and pay', 'Create a booking hold and finish payment securely through Stripe Checkout.'],
-    ['check', 'Get confirmation', 'Once payment is verified, the booking is confirmed and a confirmation email is sent.'],
+    ['calendar', 'Request your date', 'Send a booking request. The selected time is held while the venue owner reviews it.'],
+    ['card', 'Pay after approval', 'If accepted, complete secure Stripe checkout before the payment hold expires.'],
 ]
 
 export default function About() {
@@ -38,12 +38,12 @@ export default function About() {
                 <section className="card about-info-card">
                     <span className="about-info-icon"><Icon name="clock" size={20} /></span>
                     <h2>Booking times</h2>
-                    <p>Choose a future start time and a duration in 30-minute increments. A booking can last up to 14 days. The venue owner’s cancellation policy is shown before you reserve and saved with your booking.</p>
+                    <p>Choose a future start time and a duration in 30-minute increments. A booking can last up to 14 days. The venue owner’s cancellation policy and refund schedule are shown before you request and saved with your booking.</p>
                 </section>
                 <section className="card about-info-card">
                     <span className="about-info-icon"><Icon name="shield" size={20} /></span>
                     <h2>Clear prices and payments</h2>
-                    <p>Your quote shows venue rental and cleaning fees due at checkout. Any refundable deposit owed to the venue is listed separately. Payment confirmation can take a short moment while the secure checkout result is verified.</p>
+                    <p>Your quote shows venue rental and cleaning fees due at checkout. Any refundable deposit owed to the venue is listed separately. Payment is available after the venue accepts your request, and confirmation can take a short moment while the secure checkout result is verified.</p>
                 </section>
             </div>
 

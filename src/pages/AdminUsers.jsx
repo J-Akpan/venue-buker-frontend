@@ -12,7 +12,7 @@ export default function AdminUsers() {
     const { user, isSuperAdmin } = useAuth()
     const toast = useToast()
     const [page, setPage] = useState(1)
-    const { data, error, loading, reload } = useAsync(() => usersApi.list({ page, limit: 25 }), [page])
+    const { data, error, loading, reload } = useAsync((signal) => usersApi.list({ page, limit: 25 }, signal), [page])
 
     const changeRole = async (u, role) => {
         try {

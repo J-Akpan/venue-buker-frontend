@@ -17,6 +17,7 @@ function ProfileForm() {
         contact: user.contact || '',
         address: user.address || '',
         gender: user.gender || '',
+        whatsappOptIn: Boolean(user.whatsappOptIn),
     })
     const [errors, setErrors] = useState({})
     const [error, setError] = useState('')
@@ -27,7 +28,9 @@ function ProfileForm() {
         e.preventDefault()
         setError('')
         // The API rejects empty strings and requires at least one field; send only what is filled in.
-        const body = Object.fromEntries(Object.entries(form).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v))
+        const body = Object.fromEntries(Object.entries(form)
+            .map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v])
+            .filter(([, v]) => typeof v === 'boolean' || v))
         if (!Object.keys(body).length) return setError('Fill in at least one field')
         setBusy(true)
         try {
@@ -62,6 +65,10 @@ function ProfileForm() {
                 </Field>
             </div>
             <Field label="Address" error={errors.address}><input value={form.address} onChange={set('address')} maxLength={255} autoComplete="street-address" /></Field>
+            <label className="profile-consent">
+                <input type="checkbox" checked={form.whatsappOptIn} onChange={(e) => setForm((current) => ({ ...current, whatsappOptIn: e.target.checked }))} />
+                <span><strong>WhatsApp updates</strong><small className="muted">Allow booking updates and service messages on WhatsApp. You can change this any time.</small></span>
+            </label>
             <button className="btn" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
         </form>
     )

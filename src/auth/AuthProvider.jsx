@@ -9,26 +9,49 @@ export function AuthProvider({ children }) {
     // 'loading' while we validate a stored session on first paint, so guarded routes don't flash a redirect.
     const [status, setStatus] = useState(tokens.access || tokens.refresh ? 'loading' : 'ready')
     const [expired, setExpired] = useState(false)
+    const [sessionError, setSessionError] = useState(false)
+
+    const validateSession = useCallback(async (signal) => {
+        setStatus('loading')
+        setSessionError(false)
+        try {
+            const r = await usersApi.me(signal)
+            if (!signal?.aborted) {
+                setUser(r.user)
+                setExpired(false)
+            }
+        } catch (err) {
+            if (signal?.aborted || err?.code === 'ERR_CANCELED') return
+            const httpStatus = err?.response?.status
+            if (httpStatus === 401 || httpStatus === 403) {
+                tokens.clear()
+                setUser(null)
+            } else {
+                setSessionError(true)
+            }
+        } finally {
+            if (!signal?.aborted) setStatus('ready')
+        }
+    }, [])
 
     useEffect(() => {
         setSessionExpiredHandler(() => {
             setUser(null)
             setExpired(true)
+            setSessionError(false)
         })
-        if (status !== 'loading') return
-        usersApi
-            .me()
-            .then((r) => setUser(r.user))
-            .catch(() => tokens.clear())
-            .finally(() => setStatus('ready'))
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+        if (!tokens.access && !tokens.refresh) return
+        const controller = new AbortController()
+        validateSession(controller.signal)
+        return () => controller.abort()
+    }, [validateSession])
 
     const login = useCallback(async (credentials) => {
         const res = await usersApi.login(credentials)
         tokens.set(res)
         setUser(res.user)
         setExpired(false)
+        setSessionError(false)
         return res.user
     }, [])
 
@@ -45,6 +68,7 @@ export function AuthProvider({ children }) {
         const refresh = tokens.refresh
         tokens.clear()
         setUser(null)
+        setSessionError(false)
         if (refresh) usersApi.logout(refresh).catch(() => {})
     }, [])
 
@@ -59,6 +83,8 @@ export function AuthProvider({ children }) {
             user,
             status,
             expired,
+            sessionError,
+            retrySession: () => validateSession(),
             dismissExpired: () => setExpired(false),
             isOwner: ['Venue Owner', 'Admin', 'Super Admin'].includes(user?.role),
             isAdmin: user?.role === 'Admin' || user?.role === 'Super Admin',
@@ -69,7 +95,7 @@ export function AuthProvider({ children }) {
             refreshUser,
             setUser,
         }),
-        [user, status, expired, login, register, logout, refreshUser],
+        [user, status, expired, sessionError, login, register, logout, refreshUser, validateSession],
     )
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

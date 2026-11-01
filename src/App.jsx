@@ -46,7 +46,17 @@ function NotFound() {
 }
 
 function SessionBanner() {
-    const { expired, dismissExpired } = useAuth()
+    const { expired, dismissExpired, sessionError, retrySession, status } = useAuth()
+    if (sessionError) {
+        return (
+            <div className="banner" role="alert">
+                We couldn't verify your saved session. Check your connection and try again.
+                <button className="btn btn-ghost btn-sm" onClick={retrySession} disabled={status === 'loading'}>
+                    {status === 'loading' ? 'Retrying…' : 'Retry'}
+                </button>
+            </div>
+        )
+    }
     if (!expired) return null
     return (
         <div className="banner" role="alert">

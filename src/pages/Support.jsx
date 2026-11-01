@@ -17,7 +17,11 @@ function NewCaseForm({ initialBookingId, onClose, onSaved }) {
     const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
     useEffect(() => {
-        bookingsApi.mine({ page: 1, limit: 50 }).then((r) => setBookings(r.data)).catch(() => {})
+        const controller = new AbortController()
+        bookingsApi.mine({ page: 1, limit: 50 }, controller.signal)
+            .then((r) => { if (!controller.signal.aborted) setBookings(r.data) })
+            .catch(() => {})
+        return () => controller.abort()
     }, [])
 
     const submit = async (e) => {
@@ -86,7 +90,7 @@ export default function Support() {
     const [params, setParams] = useSearchParams()
     const page = Number(params.get('page')) || 1
     const [creating, setCreating] = useState(!!params.get('bookingId'))
-    const { data, error, loading, reload } = useAsync(() => supportApi.mine({ page, limit: 10 }), [page])
+    const { data, error, loading, reload } = useAsync((signal) => supportApi.mine({ page, limit: 10 }, signal), [page])
 
     const closeForm = () => {
         setCreating(false)
