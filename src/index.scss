@@ -1,0 +1,1421 @@
+// Theme variables
+$primary: #4B0082; // deep purple
+$secondary: #FFF8E1; // ivory
+$accent: #D4AF37; // gold
+$bg: #F5F6FA;
+$muted: #6B7280;
+$card-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap');
+
+// deeper gold for hero wordmark
+$accent-deep: #B8860B;
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    background: $bg;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+}
+
+// Layout
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+header {
+    background: linear-gradient(90deg, rgba(75, 0, 130, 0.95), rgba(76, 29, 115, 0.95));
+    color: $secondary;
+    padding: 14px 0;
+    box-shadow: 0 2px 8px rgba(11, 15, 31, 0.06);
+}
+
+header a {
+    color: $secondary;
+    text-decoration: none
+}
+
+header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.2px;
+}
+
+nav a {
+    margin-right: 12px;
+    color: rgba(255, 255, 255, 0.92);
+    font-weight: 600;
+}
+
+// Card
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: $card-shadow;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+}
+
+.muted {
+    color: $muted
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+    align-items: center
+}
+
+.venue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px
+}
+
+/* Admin dashboard styles */
+.admin-dashboard .admin-layout {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    background: transparent;
+    box-shadow: none;
+}
+
+.admin-sidebar {
+    width: 220px;
+}
+
+.admin-sidebar h3 {
+    margin: 0 0 8px 0;
+}
+
+.admin-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.time-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #111;
+    margin-bottom: 8px;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+}
+
+.time-item.active {
+    background: linear-gradient(180deg, rgba(75, 0, 130, 0.06), rgba(75, 0, 130, 0.02));
+    box-shadow: 0 6px 18px rgba(75, 0, 130, 0.06);
+    color: $primary;
+    border-color: rgba(75, 0, 130, 0.12);
+}
+
+.admin-content {
+    flex: 1;
+}
+
+@media (max-width: 900px) {
+    .admin-dashboard .admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+    }
+}
+
+// Buttons
+.btn {
+    display: inline-block;
+    background: linear-gradient(180deg, darken($primary, 6%), $primary);
+    color: $secondary;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(75, 0, 130, 0.12);
+    text-decoration: none;
+}
+
+.btn.secondary {
+    background: $secondary;
+    color: #0f172a;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.btn.accent {
+    background: linear-gradient(180deg, darken($accent, 6%), $accent);
+    color: #111;
+}
+
+// Forms
+input,
+select {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    background: #fff;
+    outline: none;
+    font-size: 14px;
+}
+
+input:focus,
+select:focus {
+    box-shadow: 0 6px 18px rgba(75, 0, 130, 0.06);
+    border-color: rgba(75, 0, 130, 0.12)
+}
+
+form {
+    margin-top: 8px
+}
+
+// Venue card specifics
+.card h3 {
+    margin: 0 0 6px 0;
+    font-size: 18px
+}
+
+.card .price {
+    margin-top: 8px;
+    font-weight: 700;
+    color: #111
+}
+
+.card .info {
+    font-size: 13px;
+    color: $muted
+}
+
+// Page header
+.page-hero {
+    margin: 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center
+}
+
+.page-hero h1 {
+    margin: 0;
+    font-size: 28px
+}
+
+// Hero styles
+.hero {
+    /* hero background uses CSS variable --hero-url set inline on the page */
+    background-image: linear-gradient(180deg, rgba(75, 0, 130, 0.72), rgba(75, 0, 130, 0.45)), var(--hero-url);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    color: #fff;
+    min-height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero .container {
+    padding-top: 32px;
+    padding-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.hero h1 {
+    font-size: 40px;
+    margin: 0;
+}
+
+.hero p {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+@media (max-width: 768px) {
+    .hero .container {
+        padding-top: 36px;
+        padding-bottom: 36px
+    }
+
+    .hero {
+        text-align: center
+    }
+
+    .hero h1 {
+        font-size: 32px
+    }
+
+    .hero-main .hero-title {
+        font-size: 36px;
+        margin-bottom: 14px;
+    }
+
+    .hero p,
+    .hero .hero-sub {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        text-align: center;
+        min-height: 420px;
+    }
+
+    .hero .container {
+        padding-top: 24px;
+        padding-bottom: 24px
+    }
+
+    .hero h1 {
+        font-size: 18px
+    }
+
+    .hero-main .hero-title {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    .hero p,
+    .hero .hero-sub {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .hero-ctas {
+        gap: 10px;
+    }
+
+    .hero-ctas .btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .hero .card {
+        margin-top: 16px
+    }
+}
+
+// Footer area small
+.muted-small {
+    color: $muted;
+    font-size: 13px
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px
+    }
+
+    header {
+        padding: 12px 0
+    }
+
+    .brand {
+        font-size: 16px
+    }
+
+    nav a {
+        margin-right: 8px;
+        font-size: 14px
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 14px
+    }
+
+    input,
+    select {
+        font-size: 12px;
+        padding: 8px 10px
+    }
+}
+
+@media (max-width: 600px) {
+    .page-hero {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start
+    }
+
+    .page-hero h1 {
+        font-size: 20px
+    }
+
+    .page-hero p {
+        font-size: 13px
+    }
+
+    header .container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px
+    }
+
+    .venue-grid {
+        grid-template-columns: 1fr
+    }
+
+    .card {
+        padding: 16px
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center
+    }
+
+    h1 {
+        font-size: 24px !important
+    }
+
+    h2 {
+        font-size: 20px
+    }
+
+    h3 {
+        font-size: 16px
+    }
+
+    input,
+    select {
+        width: 100%;
+        box-sizing: border-box
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+        max-width: 100%
+    }
+
+    header {
+        padding: 8px 0
+    }
+
+    nav a {
+        margin-right: 4px;
+        font-size: 12px
+    }
+
+    .btn {
+        padding: 6px 10px;
+        font-size: 12px
+    }
+
+    .card {
+        padding: 12px
+    }
+
+    h1 {
+        font-size: 18px !important
+    }
+
+    h2 {
+        font-size: 16px
+    }
+
+    p {
+        font-size: 13px
+    }
+
+    .btn {
+        width: 100%;
+        padding: 10px 8px
+    }
+}
+
+/* Landing page specific classes */
+.main-section {
+    padding: 28px 20px
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px
+}
+
+.section-title {
+    margin-bottom: 12px
+}
+
+.venue-img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px
+}
+
+.hero-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    max-width: 1100px;
+    width: 100%;
+}
+
+.hero-main {
+    flex: 1;
+    color: #fff;
+    text-align: center;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.hero-main .hero-title {
+    font-size: 48px;
+    line-height: 1.15;
+    margin: 0 0 20px 0;
+    padding: 0;
+    font-family: 'Playfair Display', 'Inter', serif;
+    color: $accent-deep;
+    font-weight: 800;
+    text-shadow: 0 8px 24px rgba(11, 12, 31, 0.25);
+    letter-spacing: 0.3px;
+}
+
+.hero p,
+.hero .hero-sub {
+    color: rgba(255, 255, 255, 0.96);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 0 0 28px 0;
+    padding: 0;
+}
+
+.hero-ctas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+/* Feature icons */
+.features-grid .card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.feature-icon {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.12), rgba(75, 0, 130, 0.03));
+    border-radius: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+}
+
+.feature-icon svg {
+    width: 28px;
+    height: 28px;
+    fill: $accent-deep;
+}
+
+.features-grid .card h3 {
+    margin-top: 0;
+}
+
+.hero-sub {
+    margin-top: 12px;
+    opacity: 0.95
+}
+
+.hero-ctas {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px
+}
+
+.hero-preview {
+    width: 420px
+}
+
+.preview-card {
+    padding: 12px
+}
+
+.preview-row {
+    display: flex;
+    gap: 10px;
+    align-items: center
+}
+
+.preview-img {
+    width: 90px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px
+}
+
+.preview-title {
+    font-weight: 700
+}
+
+.preview-cta {
+    margin-top: 8px
+}
+
+.small {
+    padding: 6px 10px
+}
+
+@media (max-width:900px) {
+    .hero-preview {
+        width: 320px
+    }
+}
+
+@media (max-width:720px) {
+    .hero-inner {
+        flex-direction: column;
+        align-items: stretch
+    }
+
+    .hero-main {
+        order: 1
+    }
+
+    .hero-preview {
+        order: 2;
+        width: 100%
+    }
+
+    .hero-preview .card {
+        width: 100%
+    }
+
+    .hero-main .btn,
+    .hero-main .btn.secondary {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px
+    }
+
+    .hero-main .btn.secondary {
+        margin-left: 0
+    }
+
+    .hero-ctas {
+        flex-direction: column
+    }
+}
+
+
+/* Additional responsive layout tweaks for hero and navbar */
+.hero-inner {
+    display: flex;
+    gap: 24px;
+    align-items: center
+}
+
+.hero-main {
+    flex: 1
+}
+
+.hero-preview {
+    width: 420px
+}
+
+@media (max-width: 900px) {
+    .hero-preview {
+        width: 320px
+    }
+}
+
+@media (max-width: 720px) {
+    .hero-inner {
+        flex-direction: column;
+        align-items: stretch
+    }
+
+    .hero-main {
+        order: 1
+    }
+
+    .hero-preview {
+        order: 2;
+        width: 100%
+    }
+
+    .hero-preview .card {
+        width: 100%
+    }
+
+    .hero-main .btn,
+    .hero-main .btn.secondary {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px
+    }
+
+    .hero-main .btn.secondary {
+        margin-left: 0
+    }
+
+    header {
+        padding: 10px 12px
+    }
+
+    header img {
+        max-width: 140px
+    }
+
+    footer .container {
+        display: block
+    }
+
+    footer .container>div {
+        margin-bottom: 18px
+    }
+}
+
+/* Navbar basic styles (always show links) */
+.site-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(16, 24, 40, 0.04);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.03);
+}
+
+.site-header .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.site-header .brand-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap
+}
+
+.nav-links .btn {
+    margin-left: 6px;
+}
+
+.nav-link {
+    color: $primary;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* General helper to stack an icon above a label */
+.icon-top {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.icon-top .nav-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.nav-user.icon-top {
+    margin-right: 0;
+    color: #111;
+}
+
+/* Stack icon on top of label for compact nav items */
+.nav-link.icon-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 4px 6px;
+}
+
+.nav-link.icon-top .nav-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.nav-user {
+    color: #111;
+    margin-right: 8px
+}
+
+@media (max-width: 720px) {
+    .nav-links {
+        gap: 8px
+    }
+
+    .nav-link {
+        font-size: 14px
+    }
+}
+
+/* Logo styling */
+.site-header .site-logo {
+    width: clamp(260px, 36vw, 340px);
+    height: auto;
+    max-height: 160px;
+    display: block;
+    border-radius: 8px;
+    filter: drop-shadow(0 18px 44px rgba(59, 0, 128, 0.18));
+}
+
+@media (max-width: 480px) {
+    .site-header .site-logo {
+        width: clamp(180px, 64vw, 260px);
+        max-height: 130px;
+    }
+}
+
+/* Center logo and header contents on smaller screens */
+@media (max-width: 720px) {
+    .site-header {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .site-header .site-logo {
+        width: clamp(220px, 44vw, 300px);
+        max-height: 150px;
+        margin: 0;
+    }
+
+    .nav-links {
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .nav-links .nav-link,
+    .nav-user,
+    .site-header .btn {
+        text-align: center;
+    }
+}
+
+/* Hamburger button styling */
+.hamburger-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.hamburger-btn .bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: $primary;
+    margin: 4px 0;
+    border-radius: 2px;
+    transition: transform 200ms ease, opacity 200ms ease;
+}
+
+/* Nav icons */
+.nav-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    flex-shrink: 0;
+    color: $primary;
+}
+
+/* transform bars when open */
+.hamburger-btn .bar.open:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+}
+
+.hamburger-btn .bar.open:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-btn .bar.open:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+}
+
+@media (max-width: 720px) {
+    .hamburger-btn {
+        display: inline-flex;
+    }
+
+    /* hide nav links by default on small screens; show when open */
+    .nav-links {
+        display: none !important;
+    }
+
+    .nav-links.open {
+        display: flex !important;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        margin-top: 6px;
+        background: rgba(255, 255, 255, 0.98);
+        padding: 12px;
+        border-radius: 10px;
+        box-shadow: 0 8px 28px rgba(16, 24, 40, 0.08);
+    }
+
+    /* ensure nav links look good inside the dropdown */
+    .nav-links .nav-link {
+        color: $primary;
+        display: block;
+        width: 100%;
+        padding: 8px 6px;
+        border-radius: 6px;
+        text-align: center;
+    }
+
+    /* Ensure icon-top links remain stacked inside mobile dropdown */
+    .nav-links .nav-link.icon-top {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        width: auto;
+        padding: 8px 6px;
+    }
+
+    .nav-user,
+    .site-header .btn {
+        width: 100%;
+    }
+}
+
+/* Additional override: fully centralize hero content in responsive mode */
+@media (max-width: 720px) {
+    .hero {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    .hero .container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 12px;
+    }
+
+    .hero-inner {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center;
+        gap: 16px;
+        width: 100%;
+    }
+
+    .hero-main {
+        width: 100%;
+        max-width: 760px;
+        text-align: center;
+        padding: 0 8px;
+    }
+
+    .hero-preview {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 0 8px;
+    }
+
+    .hero-preview .card {
+        width: 100%;
+        max-width: 520px;
+        margin: 8px auto;
+    }
+
+    .hero-ctas {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        min-height: 360px;
+    }
+
+    .hero-main .hero-title {
+        font-size: 20px;
+    }
+
+    .hero-preview .card {
+        max-width: 360px;
+    }
+}
+
+/* Owner Dashboard */
+.owner-profile-page {
+    padding: 20px;
+}
+.owner-venues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+}
+.owner-form {
+    display: grid;
+    gap: 8px;
+    max-width: 720px;
+    @media (max-width: 768px) {
+        max-width: 100% !important;
+    }
+}
+.owner-venues-grid .card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Profile Page */
+.profile-username-heading {
+    margin-bottom: 6px;
+}
+.profile-info-item {
+    margin-top: 8px;
+}
+.profile-not-completed {
+    margin-top: 8px;
+}
+.profile-owner-venues {
+    margin-top: 10px;
+}
+.profile-section-spacer {
+    height: 16px;
+}
+.booking-edit-label {
+    margin-top: 8px;
+    display: block;
+    font-size: 12px;
+}
+.booking-edit-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+}
+.booking-purpose-item {
+    margin-top: 8px;
+}
+.venue-preview-title {
+    margin: 8px 0;
+}
+.venue-preview-address {
+    font-size: 13px;
+    margin-top: 4px;
+}
+.create-booking-label-mt12 {
+    margin-top: 12px;
+}
+.create-booking-label-mt8 {
+    margin-top: 8px;
+}
+.create-booking-actions {
+    margin-top: 10px;
+}
+.create-booking-form {
+    display: grid;
+    gap: 12px;
+}
+.booking-venue-preview {
+    .venue-image-placeholder {
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(135deg, #4B0082 0%, #D4AF37 100%);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 14px;
+    }
+    .venue-details {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        @media (max-width: 480px) {
+            flex-direction: column;
+            gap: 8px;
+        }
+    }
+}
+
+/* Auth Pages */
+.profile-update-page {
+    padding: 24px;
+    .auth-card {
+        max-width: 640px;
+    }
+    form {
+        display: grid;
+        gap: 8px;
+    }
+}
+.register-page {
+    padding: 24px;
+    .auth-card {
+        max-width: 540px;
+    }
+    form {
+        display: grid;
+        gap: 8px;
+    }
+}
+.login-page {
+    padding: 24px;
+    .auth-card {
+        max-width: 420px;
+    }
+    form {
+        display: grid;
+        gap: 8px;
+    }
+}
+.auth-card {
+    margin-left: auto;
+    margin-right: auto;
+}
+.error-message {
+    color: red;
+}
+@media (max-width: 600px) {
+    .auth-card {
+        max-width: 100% !important;
+    }
+}
+
+/* Search Page */
+.search-page {
+    padding: 24px;
+    .use-my-location-btn {
+        margin-left: 8px;
+    }
+    .venue-grid-container {
+        margin-top: 12px;
+    }
+}
+.search-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+@media (max-width: 600px) {
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-form input,
+    .search-form button {
+        width: 100%;
+        margin-left: 0 !important; /* override inline style */
+    }
+}
+
+/* Venue Details Page */
+.venue-details-layout {
+    padding: 20px;
+    img {
+        width: 100%;
+        height: 400px; /* Taller image on desktop */
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .back-to-venues {
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+    .book-venue-section {
+        margin-top: 24px;
+    }
+    .loading-message {
+        padding: 20px;
+    }
+    form {
+        display: grid;
+        gap: 8px;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .venue-details-layout img {
+        height: 220px;
+    }
+    .venue-details-layout h2 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .venue-details-layout img {
+        height: 180px;
+    }
+    .venue-details-layout h2 {
+        font-size: 20px;
+    }
+    .venue-details-layout form {
+        max-width: 100%;
+    }
+}
+
+/* Payment page responsive layout */
+.payment-page {
+    .booking-summary, .payment-form {
+        flex: 1;
+    }
+    .booking-summary-details {
+        margin-top: 12px;
+        padding: 12px;
+        background: #f5f6fa;
+        border-radius: 8px;
+        div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        hr {
+            margin: 8px 0;
+            border: none;
+            border-top: 1px solid rgba(15,23,42,0.1);
+        }
+        .total {
+            font-weight: 700;
+            font-size: 16px;
+            color: #4B0082;
+        }
+    }
+    .payment-form {
+        margin-top: 12px;
+        label {
+            margin-top: 8px;
+        }
+        .payment-form-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            div {
+                flex: 1;
+            }
+        }
+        .payment-buttons {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+    }
+}
+.payment-layout {
+    display: flex;
+    gap: 24px;
+}
+.payment-form-row {
+    display: flex;
+    gap: 8;
+    margin-top: 8px;
+}
+@media (max-width: 480px) {
+    .payment-form-row {
+        flex-direction: column;
+    }
+}
+
+
+/* Footer styles */
+.site-footer {
+    background: $primary;
+    color: $secondary;
+    padding: 40px 20px;
+    margin-top: 48px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.footer-col .footer-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-col h4 {
+    color: $accent;
+    margin: 0
+}
+
+.site-footer .muted {
+    color: rgba(255, 248, 225, 0.9)
+}
+
+.footer-links {
+    list-style: none;
+    margin: 0;
+    padding: 0
+}
+
+.footer-links li {
+    margin-top: 8px
+}
+
+.footer-links a {
+    color: $secondary;
+    text-decoration: none
+}
+
+.footer-newsletter {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px
+}
+
+.footer-newsletter input {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: none;
+    flex: 1
+}
+
+.footer-newsletter .btn {
+    padding: 8px 12px
+}
+
+.footer-social {
+    display: flex;
+    gap: 10px
+}
+
+.footer-social .social-icon {
+    color: $accent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 248, 225, 0.04);
+    text-decoration: none
+}
+
+.footer-sep {
+    border: none;
+    border-top: 1px solid rgba(255, 248, 225, 0.12);
+    margin: 18px 0
+}
+
+.footer-bottom {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    color: rgba(255, 248, 225, 0.9);
+    font-size: 13px
+}
+
+@media (max-width: 720px) {
+    .footer-bottom {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center
+    }
+}
+
+@media (max-width: 900px) {
+    .payment-layout {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .payment-layout .card {
+        flex: 1 !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .payment-layout {
+        gap: 12px;
+    }
+
+    .payment-layout .card h3 {
+        font-size: 18px;
+    }
+
+    .payment-layout input {
+        font-size: 14px;
+    }
+}
