@@ -87,9 +87,10 @@ const STATUS_STYLE = {
     open: 'warn',
     in_review: 'info',
     resolved: 'ok',
+    completed: 'ok',
     rejected: 'bad',
 }
-const STATUS_LABEL = { requested: 'Awaiting owner', declined: 'Declined', PartiallyRefunded: 'Partially refunded' }
+const STATUS_LABEL = { requested: 'Awaiting owner', declined: 'Declined', PartiallyRefunded: 'Partially refunded', in_review: 'In review', completed: 'Completed' }
 export function StatusBadge({ status }) {
     return <span className={`badge badge-${STATUS_STYLE[status] || 'neutral'}`}>{STATUS_LABEL[status] || String(status).replace('_', ' ')}</span>
 }

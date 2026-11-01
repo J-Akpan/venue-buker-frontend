@@ -3,10 +3,108 @@ import { usersApi } from '../api'
 import { parseError } from '../api/client'
 import { useAuth } from '../auth/AuthProvider'
 import { useToast } from '../components/Toast'
-import { Alert, Field, PageHeader } from '../components/ui'
-import { useTitle } from '../lib/hooks'
-import { initials } from '../lib/format'
+import { Alert, ConfirmDialog, ErrorState, Field, PageHeader, Spinner, StatusBadge } from '../components/ui'
+import { dateTime, initials } from '../lib/format'
+import { useAsync, useTitle } from '../lib/hooks'
 import { passwordProblem } from './Register'
+
+function PrivacySettings() {
+    const { user } = useAuth()
+    const toast = useToast()
+    const [busy, setBusy] = useState('')
+    const [confirmDeletion, setConfirmDeletion] = useState(false)
+    const requests = useAsync((signal) => usersApi.privacyRequests(signal), [user.userId])
+    const rows = requests.data?.data || []
+    const activeDeletion = rows.some((request) => request.requestType === 'deletion' && ['open', 'in_review'].includes(request.status))
+    const staffAccount = ['Admin', 'Super Admin'].includes(user.role)
+
+    const downloadExport = async () => {
+        setBusy('export')
+        try {
+            const result = await usersApi.exportPersonalData()
+            const json = JSON.stringify(result.data, null, 2)
+            const objectUrl = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
+            const anchor = document.createElement('a')
+            anchor.href = objectUrl
+            anchor.download = `venbuk-data-export-${new Date().toISOString().slice(0, 10)}.json`
+            document.body.append(anchor)
+            anchor.click()
+            anchor.remove()
+            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+            toast.success('Your data export has downloaded.')
+            requests.reload()
+        } catch (err) {
+            toast.error(parseError(err).message)
+        } finally {
+            setBusy('')
+        }
+    }
+
+    const requestDeletion = async () => {
+        setBusy('deletion')
+        try {
+            const { replayed } = await usersApi.requestDeletion()
+            setConfirmDeletion(false)
+            toast.success(replayed
+                ? 'You already have an active deletion request.'
+                : 'Your deletion request was submitted for review.')
+            requests.reload()
+        } catch (err) {
+            toast.error(parseError(err).message)
+        } finally {
+            setBusy('')
+        }
+    }
+
+    return (
+        <section className="card privacy-settings">
+            <h2>Privacy and your data</h2>
+            <p className="muted">Download a JSON copy of your account data or request account deletion. Deletion is reviewed by an administrator; your account stays active until the request is completed.</p>
+            <div className="row-gap">
+                <button type="button" className="btn btn-ghost" disabled={busy !== ''} onClick={downloadExport}>
+                    {busy === 'export' ? 'Preparing export…' : 'Download my data'}
+                </button>
+                {!staffAccount && (
+                    <button type="button" className="btn btn-ghost danger-text" disabled={busy !== '' || activeDeletion} onClick={() => setConfirmDeletion(true)}>
+                        {activeDeletion ? 'Deletion request pending' : 'Request account deletion'}
+                    </button>
+                )}
+            </div>
+            {!staffAccount && <Alert type="info">If approved, deletion anonymizes your profile, hides your owned venues, cancels active bookings and processes applicable refunds. Payout-provider records may need separate handling.</Alert>}
+
+            <div className="privacy-request-history">
+                <h3>Your privacy requests</h3>
+                {requests.error ? <ErrorState error={requests.error} onRetry={requests.reload} /> : requests.loading && !requests.data ? <Spinner /> : rows.length === 0 ? (
+                    <p className="muted small">No privacy requests yet.</p>
+                ) : (
+                    <ul className="list">
+                        {rows.map((request) => (
+                            <li className="card booking-row" key={request.requestId}>
+                                <div className="booking-main">
+                                    <strong>{request.requestType === 'deletion' ? 'Account deletion' : 'Data export'}</strong>
+                                    <span className="muted small">Submitted {dateTime(request.createdAt)}</span>
+                                    {request.note && <span className="muted small">{request.note}</span>}
+                                </div>
+                                <div className="booking-side"><StatusBadge status={request.status} /></div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+
+            <ConfirmDialog
+                open={confirmDeletion}
+                danger
+                busy={busy === 'deletion'}
+                title="Request account deletion?"
+                confirmLabel="Submit deletion request"
+                message="This sends a request to an administrator. Your account remains active until the request is reviewed and completed."
+                onConfirm={requestDeletion}
+                onClose={() => setConfirmDeletion(false)}
+            />
+        </section>
+    )
+}
 
 function ProfileForm() {
     const { user, setUser } = useAuth()
@@ -138,6 +236,7 @@ export default function Profile() {
             <div className="stack">
                 <ProfileForm />
                 <PasswordForm />
+                <PrivacySettings />
             </div>
         </div>
     )

@@ -42,7 +42,7 @@ origin as the API (e.g. the backend's nginx) and leave `VITE_API_URL` empty.
   tiers; upload venue photos, confirm availability, publish a private calendar feed, accept or decline requests, view
   booking analytics and connect Stripe payouts. **Admins**: user directory, venue verification, support cases and staff
   management.
-- **Account preferences**: profile and security settings, including opt-in WhatsApp booking updates.
+- **Account preferences and privacy**: profile and security settings, WhatsApp booking updates, JSON data export, and deletion requests with an admin review queue.
 - Loading skeletons, empty and error states, field-level validation errors from the API, toasts, accessible
   modals, keyboard/skip-link support, responsive layout, code-split routes.
 

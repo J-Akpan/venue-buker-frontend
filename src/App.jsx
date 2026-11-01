@@ -25,6 +25,7 @@ const Support = lazy(() => import('./pages/Support'))
 const CaseDetail = lazy(() => import('./pages/CaseDetail'))
 const AdminCases = lazy(() => import('./pages/AdminCases'))
 const AdminStaff = lazy(() => import('./pages/AdminStaff'))
+const AdminPrivacy = lazy(() => import('./pages/AdminPrivacy'))
 const About = lazy(() => import('./pages/About'))
 
 function ScrollToTop() {
@@ -106,6 +107,7 @@ export default function App() {
                             <Route path="/admin/venues" element={<AdminVenues />} />
                             <Route path="/admin/cases" element={<AdminCases />} />
                             <Route path="/admin/cases/:caseId" element={<CaseDetail staff />} />
+                            <Route path="/admin/privacy" element={<AdminPrivacy />} />
                         </Route>
 
                         <Route element={<RequireAuth role="Super Admin" />}>

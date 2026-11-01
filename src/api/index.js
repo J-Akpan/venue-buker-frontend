@@ -9,6 +9,9 @@ export const usersApi = {
     me: (signal) => data(http.get('/users/me', { signal })),
     updateMe: (body) => data(http.patch('/users/me', body)),
     changePassword: (body) => data(http.put('/users/me/password', body)),
+    exportPersonalData: () => data(http.get('/users/me/export', { timeout: 120000 })),
+    requestDeletion: () => data(http.post('/users/me/deletion-request')),
+    privacyRequests: (signal) => data(http.get('/users/me/privacy-requests', { signal })),
     forgotPassword: (email) => data(http.post('/users/forgot-password', { email })),
     resetPassword: (body) => data(http.post('/users/reset-password', body)),
     list: (params, signal) => data(http.get('/users', { params, signal })),
@@ -67,6 +70,12 @@ export const adminCasesApi = {
     get: (id, signal) => data(http.get(`/admin/cases/${id}`, { signal })),
     assign: (id, assigneeId) => data(http.post(`/admin/cases/${id}/assign`, assigneeId ? { assigneeId } : {})),
     resolve: (id, body) => data(http.post(`/admin/cases/${id}/resolve`, body)),
+}
+
+// Admin and Super Admin privacy-request queue.
+export const adminPrivacyApi = {
+    list: (params, signal) => data(http.get('/admin/privacy', { params, signal })),
+    resolve: (requestId, body) => data(http.post(`/admin/privacy/${requestId}/resolve`, body)),
 }
 
 // Super Admin only.

@@ -90,6 +90,7 @@ export default function NavBar() {
                                             <Link role="menuitem" to="/admin">Users</Link>
                                             <Link role="menuitem" to="/admin/venues">Venue verification</Link>
                                             <Link role="menuitem" to="/admin/cases">Support cases</Link>
+                                            <Link role="menuitem" to="/admin/privacy">Privacy requests</Link>
                                             {isSuperAdmin && <Link role="menuitem" to="/admin/staff">Staff</Link>}
                                         </div>
                                     )}
