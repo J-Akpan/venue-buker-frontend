@@ -15,18 +15,22 @@ export const usersApi = {
 }
 
 export const venuesApi = {
-    list: (params, signal) => data(http.get('/venues', { params, signal })),
+    list: (params, signal) => data(http.get('/venues', { params, signal, paramsSerializer: { indexes: null } })),
     get: (id, signal) => data(http.get(`/venues/${id}`, { signal })),
     mine: (params) => data(http.get('/venues/mine', { params })),
     create: (body) => data(http.post('/venues', body)),
     update: (id, body) => data(http.patch(`/venues/${id}`, body)),
+    confirmAvailability: (id) => data(http.post(`/venues/${id}/availability-confirmation`)),
+    setVerification: (id, verified) => data(http.post(`/venues/${id}/verification`, { verified })),
     remove: (id) => http.delete(`/venues/${id}`),
 }
 
 export const bookingsApi = {
+    availability: (params, signal) => data(http.get('/bookings/availability', { params, signal })),
+    quote: (params, signal) => data(http.get('/bookings/quote', { params, signal })),
     create: (body, idempotencyKey) =>
         data(http.post('/bookings', body, { headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {} })),
-    mine: (params) => data(http.get('/bookings', { params })),
+    mine: (params, signal) => data(http.get('/bookings', { params, signal })),
     get: (id, signal) => data(http.get(`/bookings/${id}`, { signal })),
     forVenue: (venueId, params) => data(http.get(`/bookings/venue/${venueId}`, { params })),
     cancel: (id) => data(http.post(`/bookings/${id}/cancel`)),
@@ -35,6 +39,11 @@ export const bookingsApi = {
 export const paymentsApi = {
     checkout: (bookingId) => data(http.post('/payments/checkout', { bookingId })),
     forBooking: (bookingId) => data(http.get(`/payments/booking/${bookingId}`)),
+}
+
+export const reviewsApi = {
+    forVenue: (venueId, params, signal) => data(http.get(`/reviews/venues/${venueId}`, { params, signal })),
+    create: (body) => data(http.post('/reviews', body)),
 }
 
 // Complaints and disputes raised by bookers / venue owners.

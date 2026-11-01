@@ -91,11 +91,19 @@ export default function BookingDetail() {
                     <div><dt>Starts</dt><dd>{dateTime(b.startsAt)}</dd></div>
                     <div><dt>Ends</dt><dd>{dateTime(b.endsAt)}</dd></div>
                     <div><dt>Duration</dt><dd>{durationLabel(b.startsAt, b.endsAt)}</dd></div>
-                    <div className="total"><dt>Total</dt><dd>{money(b.totalPrice, b.currency)}</dd></div>
+                    {b.eventType && <div><dt>Event type</dt><dd>{b.eventType}</dd></div>}
+                    {b.attendeeCount && <div><dt>Attendees</dt><dd>{Number(b.attendeeCount).toLocaleString()}</dd></div>}
+                    {b.priceBreakdown && <>
+                        <div><dt>Venue rental</dt><dd>{money(b.priceBreakdown.venueRental, b.currency)}</dd></div>
+                        <div><dt>Cleaning fee</dt><dd>{money(b.priceBreakdown.cleaningFee, b.currency)}</dd></div>
+                    </>}
+                    <div className="total"><dt>Due now</dt><dd>{money(b.priceBreakdown?.amountDueNow ?? b.totalPrice, b.currency)}</dd></div>
+                    {Number(b.priceBreakdown?.refundableDepositDueToVenue) > 0 && <div><dt>Refundable deposit (due separately to venue)</dt><dd>{money(b.priceBreakdown.refundableDepositDueToVenue, b.currency)}</dd></div>}
                     <div><dt>Booking ref</dt><dd className="mono">{b.bookingId.slice(0, 8).toUpperCase()}</dd></div>
                     <div><dt>Booked on</dt><dd>{dateTime(b.createdAt)}</dd></div>
                     {b.cancelledAt && <div><dt>Cancelled on</dt><dd>{dateTime(b.cancelledAt)}</dd></div>}
                 </dl>
+                {b.cancellationPolicySnapshot && <p className="muted small"><strong>Cancellation policy:</strong> {b.cancellationPolicySnapshot}</p>}
 
                 <div className="row-gap">
                     {status === 'pending' && mine && <button className="btn" disabled={busy} onClick={pay}>{busy ? 'Opening…' : 'Pay now'}</button>}

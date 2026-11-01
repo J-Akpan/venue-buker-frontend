@@ -10,7 +10,20 @@ import { VenueImage } from '../components/VenueCard'
 import { effectiveStatus } from '../components/BookingParts'
 import { useToast } from '../components/Toast'
 
-const blank = { name: '', description: '', location: '', capacity: '', pricePerHour: '', currency: 'USD', contact: '', pictures: '' }
+const blank = {
+    name: '', description: '', location: '', capacity: '', pricePerHour: '', currency: 'NGN', contact: '', pictures: '',
+    cleaningFee: '0', refundableDeposit: '0', overtimePricePerHour: '0', eventTypes: '', amenities: '', cancellationPolicy: '',
+}
+
+const splitList = (value) => value.split(',').map((item) => item.trim()).filter(Boolean)
+const isHttpsUrl = (value) => {
+    try { return new URL(value).protocol === 'https:' } catch { return false }
+}
+const validAmount = (value) => {
+    const amount = Number(value)
+    const cents = amount * 100
+    return value !== '' && Number.isFinite(amount) && amount >= 0 && amount <= 10_000_000 && Math.abs(cents - Math.round(cents)) < 1e-8
+}
 
 const toForm = (v) => ({
     name: v.name,
@@ -21,6 +34,12 @@ const toForm = (v) => ({
     currency: v.currency,
     contact: v.contact,
     pictures: (v.pictures || []).join('\n'),
+    cleaningFee: String(v.cleaningFee ?? 0),
+    refundableDeposit: String(v.refundableDeposit ?? 0),
+    overtimePricePerHour: String(v.overtimePricePerHour ?? 0),
+    eventTypes: (v.eventTypes || []).join(', '),
+    amenities: (v.amenities || []).join(', '),
+    cancellationPolicy: v.cancellationPolicy || '',
 })
 
 function VenueForm({ venue, onClose, onSaved }) {
@@ -35,15 +54,23 @@ function VenueForm({ venue, onClose, onSaved }) {
     const submit = async (e) => {
         e.preventDefault()
         const pictures = form.pictures.split('\n').map((s) => s.trim()).filter(Boolean)
+        const eventTypes = splitList(form.eventTypes)
+        const amenities = splitList(form.amenities)
         const v = {}
         if (!form.name.trim()) v.name = 'Required'
         if (!form.description.trim()) v.description = 'Required'
         if (!form.location.trim()) v.location = 'Required'
         if (!form.contact.trim()) v.contact = 'Required'
-        if (!(Number(form.capacity) >= 1)) v.capacity = 'Enter at least 1'
-        if (form.pricePerHour === '' || !(Number(form.pricePerHour) >= 0)) v.pricePerHour = 'Enter a price (0 or more)'
+        if (!Number.isInteger(Number(form.capacity)) || Number(form.capacity) < 1 || Number(form.capacity) > 1_000_000) v.capacity = 'Enter a whole number from 1 to 1,000,000'
+        if (!validAmount(form.pricePerHour)) v.pricePerHour = 'Enter a price from 0 to 10,000,000 with up to 2 decimals'
+        for (const [key, label] of [['cleaningFee', 'Cleaning fee'], ['refundableDeposit', 'Refundable deposit'], ['overtimePricePerHour', 'Overtime rate']]) {
+            const value = form[key]
+            if (!validAmount(value)) v[key] = `${label} must be from 0 to 10,000,000 with up to 2 decimals`
+        }
         if (pictures.length > 10) v.pictures = 'At most 10 images'
-        else if (pictures.some((p) => !/^https:\/\/\S+$/i.test(p))) v.pictures = 'Each image must be a valid https:// link, one per line'
+        else if (pictures.some((p) => !isHttpsUrl(p))) v.pictures = 'Each image must be a valid https:// link, one per line'
+        if (eventTypes.length > 20 || new Set(eventTypes).size !== eventTypes.length || eventTypes.some((item) => item.length < 2 || item.length > 60)) v.eventTypes = 'Use up to 20 unique event types, each 2-60 characters'
+        if (amenities.length > 40 || new Set(amenities).size !== amenities.length || amenities.some((item) => item.length < 2 || item.length > 60)) v.amenities = 'Use up to 40 unique amenities, each 2-60 characters'
         setErrors(v)
         setError('')
         if (Object.keys(v).length) return
@@ -55,6 +82,12 @@ function VenueForm({ venue, onClose, onSaved }) {
             contact: form.contact.trim(),
             capacity: Number(form.capacity),
             pricePerHour: Number(form.pricePerHour),
+            cleaningFee: Number(form.cleaningFee),
+            refundableDeposit: Number(form.refundableDeposit),
+            overtimePricePerHour: Number(form.overtimePricePerHour),
+            eventTypes,
+            amenities,
+            cancellationPolicy: form.cancellationPolicy.trim() || null,
             pictures,
             ...(editing ? {} : { currency: form.currency }), // currency is fixed once a venue exists
         }
@@ -80,8 +113,8 @@ function VenueForm({ venue, onClose, onSaved }) {
                 <Field label="Location" error={errors.location} hint="City and area, e.g. Lekki, Lagos"><input value={form.location} onChange={set('location')} maxLength={160} /></Field>
                 <Field label="Description" error={errors.description}><textarea rows={4} value={form.description} onChange={set('description')} maxLength={5000} /></Field>
                 <div className="form-grid">
-                    <Field label="Capacity (guests)" error={errors.capacity}><input type="number" min="1" inputMode="numeric" value={form.capacity} onChange={set('capacity')} /></Field>
-                    <Field label="Price per hour" error={errors.pricePerHour}><input type="number" min="0" step="0.01" inputMode="decimal" value={form.pricePerHour} onChange={set('pricePerHour')} /></Field>
+                    <Field label="Capacity (guests)" error={errors.capacity}><input type="number" min="1" max="1000000" step="1" inputMode="numeric" value={form.capacity} onChange={set('capacity')} /></Field>
+                    <Field label="Price per hour" error={errors.pricePerHour}><input type="number" min="0" max="10000000" step="0.01" inputMode="decimal" value={form.pricePerHour} onChange={set('pricePerHour')} /></Field>
                     <Field label="Currency" hint={editing ? 'Cannot be changed after creation' : undefined}>
                         <select value={form.currency} onChange={set('currency')} disabled={editing}>
                             <option>USD</option>
@@ -89,7 +122,13 @@ function VenueForm({ venue, onClose, onSaved }) {
                         </select>
                     </Field>
                     <Field label="Contact (phone or email)" error={errors.contact}><input value={form.contact} onChange={set('contact')} maxLength={64} /></Field>
+                    <Field label="Cleaning fee" error={errors.cleaningFee}><input type="number" min="0" max="10000000" step="0.01" value={form.cleaningFee} onChange={set('cleaningFee')} /></Field>
+                    <Field label="Refundable deposit" error={errors.refundableDeposit} hint="Due separately to you; it is not part of online checkout."><input type="number" min="0" max="10000000" step="0.01" value={form.refundableDeposit} onChange={set('refundableDeposit')} /></Field>
+                    <Field label="Overtime price per hour" error={errors.overtimePricePerHour}><input type="number" min="0" max="10000000" step="0.01" value={form.overtimePricePerHour} onChange={set('overtimePricePerHour')} /></Field>
                 </div>
+                <Field label="Event types" error={errors.eventTypes} hint="Comma separated, up to 20. Leave blank for any event type."><input value={form.eventTypes} onChange={set('eventTypes')} maxLength={1400} /></Field>
+                <Field label="Amenities" error={errors.amenities} hint="Comma separated, up to 40."><input value={form.amenities} onChange={set('amenities')} maxLength={2600} /></Field>
+                <Field label="Cancellation policy" error={errors.cancellationPolicy}><textarea rows={3} value={form.cancellationPolicy} onChange={set('cancellationPolicy')} maxLength={2000} /></Field>
                 <Field label="Photo links (https, one per line, max 10)" error={errors.pictures}>
                     <textarea rows={3} value={form.pictures} onChange={set('pictures')} placeholder="https://…" />
                 </Field>
@@ -117,7 +156,7 @@ function VenueBookings({ venue, onClose }) {
                 <>
                     <div className="table-wrap">
                         <table className="table">
-                            <thead><tr><th>When</th><th>Total</th><th>Status</th></tr></thead>
+                            <thead><tr><th>When</th><th>Due now</th><th>Status</th></tr></thead>
                             <tbody>
                                 {data.data.map((b) => (
                                     <tr key={b.bookingId}>
@@ -145,6 +184,7 @@ export default function OwnerDashboard() {
     const [viewing, setViewing] = useState(null)
     const [deleting, setDeleting] = useState(null)
     const [busy, setBusy] = useState(false)
+    const [confirming, setConfirming] = useState('')
     const [params, setParams] = useSearchParams()
 
     // "Edit this venue" on a venue page links here with ?edit=<venueId>.
@@ -171,6 +211,19 @@ export default function OwnerDashboard() {
         }
     }
 
+    const confirmAvailability = async (venue) => {
+        setConfirming(venue.venueId)
+        try {
+            await venuesApi.confirmAvailability(venue.venueId)
+            toast.success('Availability confirmed')
+            reload()
+        } catch (err) {
+            toast.error(parseError(err).message)
+        } finally {
+            setConfirming('')
+        }
+    }
+
     return (
         <div className="container section">
             <PageHeader
@@ -194,8 +247,13 @@ export default function OwnerDashboard() {
                                 <div className="owner-card-img"><VenueImage venue={v} /></div>
                                 <h3>{v.name}</h3>
                                 <p className="venue-loc small"><Icon name="pin" size={14} /> {v.location} <span aria-hidden>·</span> <Icon name="users" size={14} /> {v.capacity} <span aria-hidden>·</span> {money(v.pricePerHour, v.currency)}/hr</p>
+                                <p className="owner-venue-status">
+                                    <span className="chip">{v.isVerified ? 'Verified' : 'Awaiting verification'}</span>
+                                    <span className="muted small">{v.availabilityConfirmedAt ? `Availability checked ${dateTime(v.availabilityConfirmedAt)}` : 'Availability not confirmed yet'}</span>
+                                </p>
                                 <div className="row-gap">
                                     <button className="btn btn-sm" onClick={() => setViewing(v)}>Bookings</button>
+                                    <button className="btn btn-ghost btn-sm" disabled={confirming === v.venueId} onClick={() => confirmAvailability(v)}>{confirming === v.venueId ? 'Confirming…' : 'Confirm availability'}</button>
                                     <button className="btn btn-ghost btn-sm" onClick={() => setEditing(v)}>Edit</button>
                                     <Link className="btn btn-ghost btn-sm" to={`/venues/${v.venueId}`}>View</Link>
                                     <button className="btn btn-ghost btn-sm danger-text" onClick={() => setDeleting(v)}>Delete</button>

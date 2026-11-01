@@ -28,11 +28,15 @@ origin as the API (e.g. the backend's nginx) and leave `VITE_API_URL` empty.
 - **Auth**: sign up (User / Venue Owner), sign in with email or username, silent access-token refresh
   (single-flight, so rotated refresh tokens are never reused), sign out, forgot/reset password with emailed code,
   change password (signs out everywhere, as the API does).
-- **Browsing**: venue search with keyword, location, capacity, budget, sort and pagination, all kept in the URL.
-- **Booking**: date/time picker mirroring server rules (future, 30-min steps, max 14 days), live price estimate,
-  `Idempotency-Key` on create so retries/double-clicks never double-book, then Stripe Checkout redirect.
+- **Browsing**: venue search with keyword, location, capacity, budget, event type, amenities, verification,
+  server sorting and pagination, all kept in the URL.
+- **Booking**: future start times, 30-minute durations and a 14-day maximum, with live availability checks and
+  server quotes for cleaning fees, venue deposits, event type, attendee limits and cancellation terms.
+  `Idempotency-Key` on create protects retries and double-clicks before Stripe Checkout.
 - **My bookings**: hold countdown, pay now, cancel (with refund notice), payment history, status polling after payment.
-- **Owners**: create / edit / delete venues, view bookings per venue. **Admins**: user directory.
+- **Reviews**: paginated venue ratings and reviews from guests with completed bookings.
+- **Owners**: create / edit / delete venues with amenities, event types, fees and policies; confirm availability
+  and view bookings per venue. **Admins**: user directory, venue verification, support cases and staff management.
 - Loading skeletons, empty and error states, field-level validation errors from the API, toasts, accessible
   modals, keyboard/skip-link support, responsive layout, code-split routes.
 

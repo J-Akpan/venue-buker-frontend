@@ -39,10 +39,15 @@ export default function VenueCard({ venue }) {
             <div className="venue-card-img">
                 <VenueImage venue={venue} />
                 <span className="venue-card-cap"><Icon name="users" size={14} /> Up to {Number(venue.capacity).toLocaleString()}</span>
+                {venue.isVerified && <span className="venue-verified">Verified</span>}
             </div>
             <div className="venue-card-body">
                 <h3>{venue.name}</h3>
                 <p className="venue-loc"><Icon name="pin" size={15} /> {venue.location}</p>
+                {!!venue.eventTypes?.length && <div className="venue-card-tags" aria-label="Suitable event types">
+                    {venue.eventTypes.slice(0, 2).map((type) => <span className="chip" key={type}>{type}</span>)}
+                    {venue.eventTypes.length > 2 && <span className="chip">+{venue.eventTypes.length - 2}</span>}
+                </div>}
                 <div className="venue-card-meta">
                     <span className="venue-price">
                         {money(venue.pricePerHour, venue.currency)}

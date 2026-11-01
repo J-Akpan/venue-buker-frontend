@@ -5,7 +5,8 @@ import { initials } from '../lib/format'
 import Icon from './Icons'
 
 export default function NavBar() {
-    const { user, isOwner, isAdmin, isSuperAdmin, logout } = useAuth()
+    const { user, isAdmin, isSuperAdmin, logout } = useAuth()
+    const isVenueOwner = user?.role === 'Venue Owner'
     const nav = useNavigate()
     const location = useLocation()
     const [open, setOpen] = useState(false)
@@ -60,12 +61,9 @@ export default function NavBar() {
                 <nav id="primary-nav" className={`nav-links ${open ? 'open' : ''}`} aria-label="Main">
                     <NavLink to="/search" className="nav-link">Find venues</NavLink>
                     {user && <NavLink to="/bookings" className="nav-link">My bookings</NavLink>}
-                    {isOwner && <NavLink to="/owner" className="nav-link">My venues</NavLink>}
+                    {isVenueOwner && <NavLink to="/owner" className="nav-link">My venues</NavLink>}
                     {user && <NavLink to="/support" className="nav-link">Support</NavLink>}
-                    {isAdmin && <NavLink to="/admin" end className="nav-link">Users</NavLink>}
-                    {isAdmin && <NavLink to="/admin/cases" className="nav-link">Cases</NavLink>}
-                    {isSuperAdmin && <NavLink to="/admin/staff" className="nav-link">Staff</NavLink>}
-
+                    {isAdmin && <NavLink to="/admin" className="nav-link">Admin</NavLink>}
                     <span className="nav-spacer" />
 
                     {user ? (
@@ -88,6 +86,16 @@ export default function NavBar() {
                                     </div>
                                     <Link role="menuitem" to="/profile">Profile &amp; security</Link>
                                     <Link role="menuitem" to="/bookings">My bookings</Link>
+                                    {isVenueOwner && <Link role="menuitem" to="/owner">My venues</Link>}
+                                    {isAdmin && (
+                                        <div className="dropdown-section">
+                                            <span>Admin tools</span>
+                                            <Link role="menuitem" to="/admin">Users</Link>
+                                            <Link role="menuitem" to="/admin/venues">Venue verification</Link>
+                                            <Link role="menuitem" to="/admin/cases">Support cases</Link>
+                                            {isSuperAdmin && <Link role="menuitem" to="/admin/staff">Staff</Link>}
+                                        </div>
+                                    )}
                                     <button role="menuitem" onClick={signOut}>Sign out</button>
                                 </div>
                             )}

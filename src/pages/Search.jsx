@@ -3,15 +3,16 @@ import { useNavigationType, useSearchParams } from 'react-router-dom'
 import { venuesApi } from '../api'
 import { useAsync, useDebounced, useTitle } from '../lib/hooks'
 import VenueCard, { VenueCardSkeleton } from '../components/VenueCard'
-import { EmptyState, ErrorState, Pagination } from '../components/ui'
+import { EmptyState, ErrorState, PageHeader, Pagination } from '../components/ui'
 
 const SORTS = [
+    ['verified_newest', 'Verified & newest'],
     ['newest', 'Newest'],
     ['price_asc', 'Price: low to high'],
     ['price_desc', 'Price: high to low'],
     ['capacity_desc', 'Largest capacity'],
 ]
-const FILTER_KEYS = ['q', 'location', 'minCapacity', 'maxPrice']
+const FILTER_KEYS = ['q', 'location', 'minCapacity', 'maxPrice', 'eventType', 'amenities']
 
 export default function Search() {
     useTitle('Find venues')
@@ -47,11 +48,14 @@ export default function Search() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debounced])
 
-    const sort = params.get('sort') || 'newest'
+    const sort = params.get('sort') || 'verified_newest'
     const page = Number(params.get('page')) || 1
+    const verifiedOnly = params.get('verifiedOnly') === 'true'
     const query = Object.fromEntries(
         [...FILTER_KEYS.map((k) => [k, params.get(k)]), ['sort', sort], ['page', page], ['limit', 12]].filter(([, v]) => v !== null && v !== ''),
     )
+    if (query.amenities) query.amenities = query.amenities.split(',').map((item) => item.trim()).filter(Boolean)
+    if (verifiedOnly) query.verifiedOnly = true
     const { data, error, loading, reload } = useAsync((signal) => venuesApi.list(query, signal), [params.toString()])
 
     const update = (k, v) => {
@@ -62,24 +66,30 @@ export default function Search() {
         if (k === 'page') window.scrollTo({ top: 0, behavior: 'smooth' })
     }
     const clear = () => {
-        setDraft({ q: '', location: '', minCapacity: '', maxPrice: '' })
+        setDraft({ q: '', location: '', minCapacity: '', maxPrice: '', eventType: '', amenities: '' })
         setParams({})
     }
-    const hasFilters = FILTER_KEYS.some((k) => params.get(k))
+    const hasFilters = FILTER_KEYS.some((k) => params.get(k)) || verifiedOnly
     const field = (k) => ({ value: draft[k], onChange: (e) => setDraft((d) => ({ ...d, [k]: e.target.value })) })
 
     return (
         <div className="container section">
-            <h1>Find a venue</h1>
+            <PageHeader title="Find a venue" subtitle="Compare spaces by location, size, price and the details that matter for your event." />
             <div className="filters card" role="search">
                 <label>Keyword<input placeholder="e.g. garden, hall" maxLength={100} {...field('q')} /></label>
                 <label>Location<input placeholder="City or area" maxLength={100} {...field('location')} /></label>
                 <label>Min. guests<input type="number" min="1" inputMode="numeric" placeholder="Any" {...field('minCapacity')} /></label>
                 <label>Max price / hour<input type="number" min="0" inputMode="numeric" placeholder="Any" {...field('maxPrice')} /></label>
+                <label>Event type<input placeholder="e.g. wedding" maxLength={60} {...field('eventType')} /></label>
+                <label>Amenities<input placeholder="e.g. parking, garden" {...field('amenities')} /></label>
                 <label>Sort by
-                    <select value={sort} onChange={(e) => update('sort', e.target.value === 'newest' ? '' : e.target.value)}>
+                    <select value={sort} onChange={(e) => update('sort', e.target.value === 'verified_newest' ? '' : e.target.value)}>
                         {SORTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
+                </label>
+                <label className="filter-check">
+                    <input type="checkbox" checked={verifiedOnly} onChange={(e) => update('verifiedOnly', e.target.checked ? 'true' : '')} />
+                    Verified venues only
                 </label>
             </div>
 

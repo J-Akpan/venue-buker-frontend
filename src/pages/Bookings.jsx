@@ -76,6 +76,7 @@ export default function Bookings() {
                                     </div>
                                     <div className="booking-side">
                                         <strong>{money(b.totalPrice, b.currency)}</strong>
+                                        <span className="muted small">Due now</span>
                                         <div className="row-gap">
                                             {status === 'pending' && (
                                                 <button className="btn btn-sm" disabled={busyId === b.bookingId} onClick={() => pay(b)}>

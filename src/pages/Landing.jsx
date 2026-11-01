@@ -3,14 +3,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import { venuesApi } from '../api'
 import { useAsync, useTitle } from '../lib/hooks'
 import VenueCard, { VenueCardSkeleton } from '../components/VenueCard'
-import { ErrorState } from '../components/ui'
+import { EmptyState, ErrorState } from '../components/ui'
 import Icon from '../components/Icons'
+import { useAuth } from '../auth/AuthProvider'
 import hero from '../assets/hero.svg'
 
 const STEPS = [
     ['search', 'Find', 'Filter by location, capacity and budget to shortlist the right space.'],
     ['calendar', 'Reserve', 'Pick your date and time. We hold the slot for you while you pay.'],
-    ['shield', 'Pay securely', 'Checkout with Stripe. Your booking is confirmed the moment payment clears.'],
+    ['shield', 'Pay securely', 'Checkout with Stripe. Your booking is confirmed when payment is verified.'],
 ]
 
 const OCCASIONS = [
@@ -29,15 +30,19 @@ const TRUST = [
 export default function Landing() {
     useTitle('')
     const nav = useNavigate()
+    const { user } = useAuth()
+    const isVenueOwner = user?.role === 'Venue Owner'
     const [q, setQ] = useState('')
     const [location, setLocation] = useState('')
-    const featured = useAsync((signal) => venuesApi.list({ limit: 6, sort: 'newest' }, signal), [])
+    const [guests, setGuests] = useState('')
+    const featured = useAsync((signal) => venuesApi.list({ limit: 6, sort: 'verified_newest' }, signal), [])
 
     const search = (e) => {
         e.preventDefault()
         const p = new URLSearchParams()
         if (q.trim()) p.set('q', q.trim())
         if (location.trim()) p.set('location', location.trim())
+        if (guests) p.set('minCapacity', guests)
         nav(`/search?${p}`)
     }
 
@@ -47,11 +52,12 @@ export default function Landing() {
                 <div className="container hero-inner">
                     <span className="eyebrow">Event venues, booked in minutes</span>
                     <h1>Find the perfect venue for <em>your event</em></h1>
-                    <p>Weddings, conferences, launches and parties. Browse spaces, check the price up front, and book in minutes.</p>
+                    <p>Weddings, conferences, launches and parties. Find a space by location and guest count, compare details, and book with confidence.</p>
                     <form className="hero-search" onSubmit={search} role="search">
                         <label className="hero-field"><Icon name="search" size={18} /><input aria-label="What are you planning?" placeholder="Venue name or keyword" value={q} onChange={(e) => setQ(e.target.value)} maxLength={100} /></label>
                         <label className="hero-field"><Icon name="pin" size={18} /><input aria-label="Location" placeholder="City or area" value={location} onChange={(e) => setLocation(e.target.value)} maxLength={100} /></label>
-                        <button className="btn btn-gold btn-lg">Search venues</button>
+                        <label className="hero-field"><Icon name="users" size={18} /><input aria-label="Number of guests" type="number" min="1" max="1000000" placeholder="Guests" value={guests} onChange={(e) => setGuests(e.target.value)} /></label>
+                        <button className="btn btn-gold btn-lg"><Icon name="search" size={18} /> Find a venue</button>
                     </form>
                     <div className="occasions">
                         <span>Popular:</span>
@@ -72,7 +78,7 @@ export default function Landing() {
 
             <section className="container section">
                 <div className="section-head">
-                    <h2>Newly listed venues</h2>
+                    <h2>Featured venues</h2>
                     <Link to="/search">View all →</Link>
                 </div>
                 {featured.error ? (
@@ -85,7 +91,9 @@ export default function Landing() {
                     </div>
                 )}
                 {!featured.loading && !featured.error && featured.data.data.length === 0 && (
-                    <p className="muted">No venues listed yet. Check back soon.</p>
+                    <EmptyState title="New spaces are on the way" action={<Link to="/search" className="btn btn-ghost">Browse all venues</Link>}>
+                        There are no listings to feature right now. Check back soon or explore the full venue catalogue.
+                    </EmptyState>
                 )}
             </section>
 
@@ -103,15 +111,26 @@ export default function Landing() {
                 </div>
             </section>
 
-            <section className="container section">
+            {!user && <section className="container section">
                 <div className="cta-band">
                     <div>
-                        <h2>Own a venue?</h2>
-                        <p>List your space, set your hourly rate and let customers book and pay online.</p>
+                        <span className="cta-eyebrow">For venue owners</span>
+                        <h2>Bring your space to the right people.</h2>
+                        <p>Share your venue details, set clear pricing, and manage bookings from one place.</p>
                     </div>
-                    <Link to="/register?role=owner" className="btn btn-gold">List your venue</Link>
+                    <Link to="/register?role=owner" className="btn btn-gold">List your venue <span aria-hidden>→</span></Link>
                 </div>
-            </section>
+            </section>}
+            {isVenueOwner && <section className="container section">
+                <div className="cta-band">
+                    <div>
+                        <span className="cta-eyebrow">Venue owner workspace</span>
+                        <h2>Keep your listings up to date.</h2>
+                        <p>Review availability, update venue details, and keep an eye on upcoming bookings.</p>
+                    </div>
+                    <Link to="/owner" className="btn btn-gold">Manage my venues <span aria-hidden>→</span></Link>
+                </div>
+            </section>}
         </>
     )
 }

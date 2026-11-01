@@ -20,6 +20,7 @@ const BookingDetail = lazy(() => import('./pages/BookingDetail'))
 const PaymentResult = lazy(() => import('./pages/PaymentResult'))
 const OwnerDashboard = lazy(() => import('./pages/OwnerDashboard'))
 const AdminUsers = lazy(() => import('./pages/AdminUsers'))
+const AdminVenues = lazy(() => import('./pages/AdminVenues'))
 const Support = lazy(() => import('./pages/Support'))
 const CaseDetail = lazy(() => import('./pages/CaseDetail'))
 const AdminCases = lazy(() => import('./pages/AdminCases'))
@@ -92,6 +93,7 @@ export default function App() {
 
                         <Route element={<RequireAuth role="Admin" />}>
                             <Route path="/admin" element={<AdminUsers />} />
+                            <Route path="/admin/venues" element={<AdminVenues />} />
                             <Route path="/admin/cases" element={<AdminCases />} />
                             <Route path="/admin/cases/:caseId" element={<CaseDetail staff />} />
                         </Route>
